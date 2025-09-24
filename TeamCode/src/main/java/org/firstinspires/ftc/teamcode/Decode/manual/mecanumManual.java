@@ -6,6 +6,7 @@ import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
+import com.pedropathing.math.Vector;
 import com.pedropathing.paths.HeadingInterpolator;
 import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
@@ -17,14 +18,14 @@ import java.util.function.Supplier;
 
 @Configurable
 @TeleOp
-public class mainManual extends OpMode {
+public class mecanumManual extends OpMode {
     private Follower follower;
-    public static Pose startingPose; //See ExampleAuto to understand how to use this
-    private boolean automatedDrive;
+    public static Pose startingPose = new Pose(0,0,Math.toRadians(90)); //See ExampleAuto to understand how to use this
+    private boolean automatedDrive = false;
     private Supplier<PathChain> pathChain;
     private TelemetryManager telemetryM;
-    private boolean slowMode = false;
-    private double slowModeMultiplier = 0.5;
+    private boolean fieldCentric = false;
+    private Vector leftStickInput = new Vector();
 
     @Override
     public void init() {
@@ -52,33 +53,27 @@ public class mainManual extends OpMode {
         //Call this once per loop
         follower.update();
         telemetryM.update();
-
-        if (!automatedDrive) {
-            //Make the last parameter false for field-centric
-            //In case the drivers want to use a "slowMode" you can scale the vectors
-
-            //This is the normal version to use in the TeleOp
-            if (!slowMode) follower.setTeleOpDrive(
-                    -gamepad1.left_stick_y,
-                    -gamepad1.left_stick_x,
-                    -gamepad1.right_stick_x,
-                    true // Robot Centric
-            );
-
-                //This is how it looks with slowMode on
-            else follower.setTeleOpDrive(
-                    -gamepad1.left_stick_y * slowModeMultiplier,
-                    -gamepad1.left_stick_x * slowModeMultiplier,
-                    -gamepad1.right_stick_x * slowModeMultiplier,
-                    true // Robot Centric
-            );
+        leftStickInput.setOrthogonalComponents(-gamepad1.left_stick_x,-gamepad1.left_stick_y);
+        
+        if (!automatedDrive){
+            if(fieldCentric) {
+                leftStickInput.rotateVector(Math.toRadians(180)-follower.getHeading());
+                follower.setTeleOpDrive(
+                        leftStickInput.getYComponent(),
+                        leftStickInput.getXComponent(),
+                        -gamepad1.right_stick_x,
+                        false
+                );
+            }
+            else
+                follower.setTeleOpDrive(
+                        leftStickInput.getYComponent(),
+                        leftStickInput.getXComponent(),
+                        -gamepad1.right_stick_x,
+                        false
+                );
         }
 
-        //Automated PathFollowing
-        if (gamepad1.aWasPressed()) {
-            follower.followPath(pathChain.get());
-            automatedDrive = true;
-        }
 
         //Stop automated following if the follower is done
         if (automatedDrive && (gamepad1.bWasPressed() || !follower.isBusy())) {
@@ -86,23 +81,16 @@ public class mainManual extends OpMode {
             automatedDrive = false;
         }
 
-        //Slow Mode
+        //Robot Centric
         if (gamepad1.rightBumperWasPressed()) {
-            slowMode = !slowMode;
+            fieldCentric = !fieldCentric;
         }
 
-        //Optional way to change slow mode strength
-        if (gamepad1.xWasPressed()) {
-            slowModeMultiplier += 0.25;
-        }
-
-        //Optional way to change slow mode strength
-        if (gamepad2.yWasPressed()) {
-            slowModeMultiplier -= 0.25;
-        }
-
-        telemetryM.debug("position", follower.getPose());
-        telemetryM.debug("velocity", follower.getVelocity());
-        telemetryM.debug("automatedDrive", automatedDrive);
+        telemetry.addData("Heading", follower.getPose().getHeading());
+        telemetry.addData("X", follower.getPose().getX());
+        telemetry.addData("Y", follower.getPose().getY());
+        telemetry.addData("leftStickX", gamepad1.left_stick_x);
+        telemetry.addData("leftStickY", gamepad1.left_stick_y);
+        telemetry.addData("Robot Centric", fieldCentric);
     }
 }
