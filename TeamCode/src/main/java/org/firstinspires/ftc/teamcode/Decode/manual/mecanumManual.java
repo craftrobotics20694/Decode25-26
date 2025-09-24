@@ -57,7 +57,7 @@ public class mecanumManual extends OpMode {
         
         if (!automatedDrive){
             if(fieldCentric) {
-                leftStickInput.rotateVector(Math.toRadians(180)-follower.getHeading());
+                leftStickInput.rotateVector(Math.toRadians(0)-follower.getHeading());
                 follower.setTeleOpDrive(
                         leftStickInput.getYComponent(),
                         leftStickInput.getXComponent(),
