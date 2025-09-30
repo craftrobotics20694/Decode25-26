@@ -20,7 +20,8 @@ import java.util.function.Supplier;
 @TeleOp
 public class mecanumManual extends OpMode {
     private Follower follower;
-    public static Pose startingPose = new Pose(0,0,Math.toRadians(90)); //See ExampleAuto to understand how to use this
+    private static final double startingHeading = Math.toRadians(90);
+    public static Pose startingPose = new Pose(0,0, startingHeading); //See ExampleAuto to understand how to use this
     private boolean automatedDrive = false;
     private Supplier<PathChain> pathChain;
     private TelemetryManager telemetryM;
@@ -57,7 +58,7 @@ public class mecanumManual extends OpMode {
         
         if (!automatedDrive){
             if(fieldCentric) {
-                leftStickInput.rotateVector(Math.toRadians(180)-follower.getHeading());
+                leftStickInput.rotateVector(follower.getHeading()-startingHeading);
                 follower.setTeleOpDrive(
                         leftStickInput.getYComponent(),
                         leftStickInput.getXComponent(),

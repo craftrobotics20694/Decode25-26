@@ -29,14 +29,6 @@ public class Constants {
         return new FollowerBuilder(followerConstants, hardwareMap)
                 .pathConstraints(pathConstraints)
                 .twoWheelLocalizer(localizerConstants)
-
-
-
-
-
-
-
-
                 .build();
     }
 }
