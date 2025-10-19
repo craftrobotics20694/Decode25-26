@@ -1,12 +1,13 @@
 package org.firstinspires.ftc.teamcode.Decode.manual;
 
 import com.bylazar.configurables.annotations.Configurable;
+import com.bylazar.panels.Panels;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
-import com.pedropathing.math.Vector;
+import org.firstinspires.ftc.teamcode.Decode.MathUtils.Vector;
 import com.pedropathing.paths.HeadingInterpolator;
 import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
@@ -20,13 +21,14 @@ import java.util.function.Supplier;
 @TeleOp
 public class mecanumManual extends OpMode {
     private Follower follower;
-    private static final double startingHeading = Math.toRadians(90);
+    private static double startingHeading = Math.toRadians(90);
     public static Pose startingPose = new Pose(0,0, startingHeading); //See ExampleAuto to understand how to use this
     private boolean automatedDrive = false;
     private Supplier<PathChain> pathChain;
     private TelemetryManager telemetryM;
     private boolean fieldCentric = false;
-    private Vector leftStickInput = new Vector();
+    private Vector targetVector;
+    private Panels panels = Panels.INSTANCE;
 
     @Override
     public void init() {
@@ -34,7 +36,6 @@ public class mecanumManual extends OpMode {
         follower.setStartingPose(startingPose == null ? new Pose() : startingPose);
         follower.update();
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
-
         pathChain = () -> follower.pathBuilder() //Lazy Curve Generation
                 .addPath(new Path(new BezierLine(follower::getPose, new Pose(45, 98))))
                 .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(45), 0.8))
@@ -53,23 +54,22 @@ public class mecanumManual extends OpMode {
     public void loop() {
         //Call this once per loop
         follower.update();
-        telemetryM.update();
-        leftStickInput.setOrthogonalComponents(-gamepad1.left_stick_x,-gamepad1.left_stick_y);
-        
+        targetVector.setOrthogonalComponents(gamepad1.left_stick_x,-gamepad1.left_stick_y);
+
         if (!automatedDrive){
             if(fieldCentric) {
-                leftStickInput.rotateVector(follower.getHeading()-startingHeading);
+                targetVector = targetVector.rotateVector(-(follower.getHeading()-startingHeading));
                 follower.setTeleOpDrive(
-                        leftStickInput.getYComponent(),
-                        leftStickInput.getXComponent(),
+                        targetVector.getYComponent(),
+                        -targetVector.getXComponent(),
                         -gamepad1.right_stick_x,
                         false
                 );
             }
             else
                 follower.setTeleOpDrive(
-                        leftStickInput.getYComponent(),
-                        leftStickInput.getXComponent(),
+                        targetVector.getYComponent(),
+                        targetVector.getXComponent(),
                         -gamepad1.right_stick_x,
                         false
                 );
@@ -77,9 +77,8 @@ public class mecanumManual extends OpMode {
 
 
         //Stop automated following if the follower is done
-        if (automatedDrive && (gamepad1.bWasPressed() || !follower.isBusy())) {
-            follower.startTeleopDrive();
-            automatedDrive = false;
+        if (gamepad1.aWasPressed()) {
+            startingHeading = follower.getHeading();
         }
 
         //Robot Centric
@@ -90,8 +89,10 @@ public class mecanumManual extends OpMode {
         telemetry.addData("Heading", follower.getPose().getHeading());
         telemetry.addData("X", follower.getPose().getX());
         telemetry.addData("Y", follower.getPose().getY());
+        telemetry.addData("Target Theta", targetVector.getTheta());
+        telemetry.addData("Target Magnitude", targetVector.getMagnitude());
         telemetry.addData("leftStickX", gamepad1.left_stick_x);
         telemetry.addData("leftStickY", gamepad1.left_stick_y);
-        telemetry.addData("Robot Centric", fieldCentric);
+        telemetry.addData("Field Centric", fieldCentric);
     }
 }

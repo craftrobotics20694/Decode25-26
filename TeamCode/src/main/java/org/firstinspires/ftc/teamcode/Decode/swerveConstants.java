@@ -9,28 +9,23 @@ import com.pedropathing.ftc.localization.Encoder;
 import com.pedropathing.ftc.localization.constants.TwoWheelConstants;
 import com.pedropathing.paths.PathConstraints;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-public class mecanumConstants {
+import org.firstinspires.ftc.teamcode.Decode.drivetrains.Swerve;
+import org.firstinspires.ftc.teamcode.Decode.drivetrains.SwerveConstants;
+
+public class swerveConstants {
     public static FollowerConstants followerConstants = new FollowerConstants()
             .mass(10.0);
 
     public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1, 1);
 
     /* Defines
-    *
+     *
      */
-    public static MecanumConstants mecanumConstants = new MecanumConstants()
-            .maxPower(1)
-            .leftFrontMotorName("leftFront")
-            .rightFrontMotorName("rightFront")
-            .leftRearMotorName("leftBack")
-            .rightRearMotorName("rightBack")
-            .leftFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
-            .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
-            .leftRearMotorDirection(DcMotorSimple.Direction.REVERSE)
-            .rightRearMotorDirection(DcMotorSimple.Direction.FORWARD)
+    public static SwerveConstants swerveConstants = new SwerveConstants()
             .xVelocity(61.0)
             .yVelocity(42.29);
 
@@ -55,7 +50,7 @@ public class mecanumConstants {
     public static Follower createFollower(HardwareMap hardwareMap) {
         return new FollowerBuilder(followerConstants, hardwareMap)
                 .pathConstraints(pathConstraints)
-                .mecanumDrivetrain(mecanumConstants)
+                .setDrivetrain(new Swerve(hardwareMap, swerveConstants))
                 .twoWheelLocalizer(localizerConstants)
                 .build();
     }
