@@ -6,9 +6,6 @@ import org.firstinspires.ftc.teamcode.Decode.MathUtils.Vector;
 import org.firstinspires.ftc.teamcode.Decode.MathUtils.mathFuncs;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-/**
- *
- */
 public class swervePod {
     private HardwareMap hardwareMap;
 
@@ -19,12 +16,12 @@ public class swervePod {
     //Tangent to robot center in direction of positive radian turning
     public Vector turnVector = new Vector(1, Math.toRadians(90));
     public double startingHeading = Math.toRadians(90);
-    public double driveDamping = 2.5;
+    public double driveDecay = 2.5;
 
     /**
-     *
-     * @param motor0 assignment for motor0, probably counterclockwise
-     * @param motor1 assignment for motor1, probably clockwise
+     * Assigns motors to prexisting motor objects
+     * @param motor0 assignment for motor0
+     * @param motor1 assignment for motor1
      * @return Returns the swervePod object
      */
     public swervePod assignMotors(DcMotorEx motor0, DcMotorEx motor1){
@@ -33,12 +30,22 @@ public class swervePod {
         return this;
     }
 
+    /**
+     * Assigns motors to this swerve object according to hardwareMap
+     * @param hardwareMap
+     * @param name0
+     * @param name1
+     * @return
+     */
     public swervePod assignMotors(HardwareMap hardwareMap, String name0, String name1){
         motor0 = hardwareMap.get(DcMotorEx.class, name0);
         motor1 = hardwareMap.get(DcMotorEx.class, name1);
         return this;
     }
 
+    /**
+     * Resets both motors encoding to a position of 0
+     */
     public void resetEncoding(){
         motor0.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         motor0.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -47,6 +54,9 @@ public class swervePod {
         motor1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
+    /**
+     * Inverts both motor directions
+     */
     public void reverseMotors(){
         motor0.setDirection(motor0.getDirection().inverted());
         motor1.setDirection(motor1.getDirection().inverted());
@@ -56,6 +66,9 @@ public class swervePod {
         heading.setComponents(1,((motor0.getCurrentPosition() - motor1.getCurrentPosition())/radiansPerTick) + startingHeading);
     }
 
+    /**
+     * @return int[2] containing motor positions
+     */
     public int[] getTicks(){
         int[] ticks = new int[2];
         ticks[0] = motor0.getCurrentPosition();
@@ -76,26 +89,27 @@ public class swervePod {
 
     /**
      * Returns the necessary motor powers for the swerve drive to apporach and drive a given vector<br>
-     * - Note that turning logic needs to be implemented in the drivetrain class
+     * - Note that logic needs to be implemented in the drivetrain class
      * @param driveVector the desired vector
      * @return
      */
     public double[] getDrivePowers(Vector driveVector){
         updateHeading();
+        driveVector.setMagnitude(mathFuncs.clamp(driveVector.getMagnitude(), -1, 1));
 
         double[] drivePowers = new double[2];
-        double deltaTheta         = mathFuncs.normalizeToPi(driveVector.getTheta()                       - heading.getTheta());
-        double oppositeDeltaTheta = mathFuncs.normalizeToPi(driveVector.rotateVector(Math.PI).getTheta() - heading.getTheta());
+        double deltaTheta         = mathFuncs.normalizeToPi(driveVector.getTheta()                  - heading.getTheta());
+        double oppositeDeltaTheta = mathFuncs.normalizeToPi(driveVector.rotated(Math.PI).getTheta() - heading.getTheta());
 
         double turnDirection, drivePower, turnPower;
         if(Math.abs(deltaTheta) < Math.toRadians(90)){
             turnDirection = Math.signum(deltaTheta);
-            drivePower = driveVector.getMagnitude()/(Math.abs(deltaTheta) * driveDamping);
+            drivePower = driveVector.getMagnitude()/((Math.abs(deltaTheta) * driveDecay) + 1);
             turnPower = (driveVector.getMagnitude() - drivePower) * turnDirection;
         }
         else{
             turnDirection = Math.signum(oppositeDeltaTheta);
-            drivePower = -driveVector.getMagnitude()/(Math.abs(oppositeDeltaTheta) * driveDamping);
+            drivePower = -driveVector.getMagnitude()/((Math.abs(oppositeDeltaTheta) * driveDecay) + 1);
             turnPower  = (driveVector.getMagnitude() + drivePower) * turnDirection;
         }
 
@@ -107,19 +121,22 @@ public class swervePod {
 
     //Used for debugging
     public double[] getDriveComponents(Vector driveVector){
+        updateHeading();
+        driveVector.setMagnitude(mathFuncs.clamp(driveVector.getMagnitude(), -1, 1));
+
         double[] driveComponents = new double[5];
-        double deltaTheta         = mathFuncs.normalizeToPi(driveVector.getTheta()                       - heading.getTheta());
-        double oppositeDeltaTheta = mathFuncs.normalizeToPi(driveVector.rotateVector(Math.PI).getTheta() - heading.getTheta());
+        double deltaTheta         = mathFuncs.normalizeToPi(driveVector.getTheta()                  - heading.getTheta());
+        double oppositeDeltaTheta = mathFuncs.normalizeToPi(driveVector.rotated(Math.PI).getTheta() - heading.getTheta());
 
         double turnDirection, drivePower, turnPower;
         if(Math.abs(deltaTheta) < Math.toRadians(90)){
             turnDirection = Math.signum(deltaTheta);
-            drivePower = driveVector.getMagnitude()/(Math.abs(deltaTheta) * driveDamping);
+            drivePower = driveVector.getMagnitude()/((Math.abs(deltaTheta) * driveDecay) + 1);
             turnPower = (driveVector.getMagnitude() - drivePower) * turnDirection;
         }
         else{
             turnDirection = Math.signum(oppositeDeltaTheta);
-            drivePower = -driveVector.getMagnitude()/(Math.abs(oppositeDeltaTheta) * driveDamping);
+            drivePower = -driveVector.getMagnitude()/((Math.abs(oppositeDeltaTheta) * driveDecay) + 1);
             turnPower  = (driveVector.getMagnitude() + drivePower) * turnDirection;
         }
 
@@ -131,5 +148,4 @@ public class swervePod {
 
         return driveComponents;
     }
-
 }

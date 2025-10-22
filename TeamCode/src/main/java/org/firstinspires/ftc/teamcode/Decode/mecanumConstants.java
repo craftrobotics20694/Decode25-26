@@ -18,9 +18,6 @@ public class mecanumConstants {
 
     public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1, 1);
 
-    /* Defines
-    *
-     */
     public static MecanumConstants mecanumConstants = new MecanumConstants()
             .maxPower(1)
             .leftFrontMotorName("leftFront")

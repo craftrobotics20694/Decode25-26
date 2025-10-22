@@ -90,7 +90,11 @@ public class Vector {
      *
      * @param theta2 the angle to add to the current direction
      */
-    public Vector rotateVector(double theta2) {
+    public void rotateVector(double theta2) {
+        setTheta(theta + theta2);
+    }
+    
+    public Vector rotated(double theta2){
         return new Vector(magnitude, theta + theta2);
     }
 
@@ -114,8 +118,8 @@ public class Vector {
      * @param scalar the scalar multiplying into the Vector.
      * @return returns the scaled Vector.
      */
-    public com.pedropathing.math.Vector times(double scalar) {
-        return new com.pedropathing.math.Vector(getMagnitude() * scalar, getTheta());
+    public Vector times(double scalar) {
+        return new Vector(getMagnitude() * scalar, getTheta());
     }
 
     /**
@@ -124,11 +128,11 @@ public class Vector {
      *
      * @return returns the normalized (or zero) Vector.
      */
-    public com.pedropathing.math.Vector normalize() {
+    public Vector normalize() {
         if (getMagnitude() == 0) {
-            return new com.pedropathing.math.Vector(0.0, getTheta());
+            return new Vector(0.0, getTheta());
         } else {
-            return new com.pedropathing.math.Vector(getMagnitude() / Math.abs(getMagnitude()), getTheta());
+            return new Vector(getMagnitude() / Math.abs(getMagnitude()), getTheta());
         }
     }
 
@@ -138,8 +142,8 @@ public class Vector {
      * @param other the other Vector.
      * @return returns the sum of the Vectors.
      */
-    public com.pedropathing.math.Vector plus(com.pedropathing.math.Vector other) {
-        com.pedropathing.math.Vector returnVector = new com.pedropathing.math.Vector();
+    public Vector plus(Vector other) {
+        Vector returnVector = new Vector();
         returnVector.setOrthogonalComponents(getXComponent() + other.getXComponent(), getYComponent() + other.getYComponent());
         return returnVector;
     }
@@ -151,8 +155,8 @@ public class Vector {
      * @param other the other Vector.
      * @return returns the second Vector subtracted from the first Vector.
      */
-    public com.pedropathing.math.Vector minus(com.pedropathing.math.Vector other) {
-        com.pedropathing.math.Vector returnVector = new com.pedropathing.math.Vector();
+    public Vector minus(Vector other) {
+        Vector returnVector = new Vector();
         returnVector.setOrthogonalComponents(getXComponent() - other.getXComponent(), getYComponent() - other.getYComponent());
         return returnVector;
     }
@@ -163,7 +167,7 @@ public class Vector {
      * @param other the Other Vector.
      * @return returns the dot product of the two Vectors.
      */
-    public double dot(com.pedropathing.math.Vector other) {
+    public double dot(Vector other) {
         return getXComponent() * other.getXComponent() + getYComponent() * other.getYComponent();
     }
 
@@ -174,7 +178,7 @@ public class Vector {
      * @param other the other Vector.
      * @return returns the cross product of the two Vectors.
      */
-    public double cross(com.pedropathing.math.Vector other) {
+    public double cross(Vector other) {
         return getXComponent() * other.getYComponent() - getYComponent() * other.getXComponent();
     }
 
@@ -185,7 +189,7 @@ public class Vector {
      * @param scaleOther the second coefficient for the other vector
      * @return the resulting vector
      */
-    public com.pedropathing.math.Vector linearCombination(com.pedropathing.math.Vector other, double scaleThis, double scaleOther) {
+    public Vector linearCombination(Vector other, double scaleThis, double scaleOther) {
         return times(scaleThis).plus(other.times(scaleOther));
     }
 
@@ -230,8 +234,8 @@ public class Vector {
      *
      * @return a new Vector with the same magnitude and direction
      */
-    public com.pedropathing.math.Vector copy() {
-        return new com.pedropathing.math.Vector(this.magnitude, this.theta);
+    public Vector copy() {
+        return new Vector(this.magnitude, this.theta);
     }
 
     /**
@@ -255,9 +259,9 @@ public class Vector {
      * @param matrix the matrix transformation
      * @return the resulting vector after applying the transformation
      */
-    public com.pedropathing.math.Vector transform(Matrix matrix) {
+    public Vector transform(Matrix matrix) {
         double[] multiply = matrix.multiply(new Matrix(new double[][]{{xComponent}, {yComponent}})).getCol(0);
-        return new com.pedropathing.math.Vector(multiply[0], multiply[1]);
+        return new Vector(multiply[0], multiply[1]);
     }
 
     /**
@@ -266,8 +270,8 @@ public class Vector {
      * @param other the vector to project onto
      * @return a new vector that is the projection of this vector onto the other vector
      */
-    public com.pedropathing.math.Vector projectOnto(com.pedropathing.math.Vector other) {
-        if (other.getMagnitude() == 0) return new com.pedropathing.math.Vector();
+    public Vector projectOnto(Vector other) {
+        if (other.getMagnitude() == 0) return new Vector();
         double scale = this.dot(other) / other.dot(other);
         return other.times(scale);
     }
