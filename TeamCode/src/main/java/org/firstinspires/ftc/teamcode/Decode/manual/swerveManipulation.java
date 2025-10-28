@@ -1,19 +1,13 @@
 package org.firstinspires.ftc.teamcode.Decode.manual;
 
-import com.bylazar.telemetry.PanelsTelemetry;
 import com.pedropathing.follower.Follower;
-import com.pedropathing.geometry.BezierLine;
-import com.pedropathing.geometry.Pose;
-import com.pedropathing.paths.HeadingInterpolator;
-import com.pedropathing.paths.Path;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import org.firstinspires.ftc.teamcode.Decode.MathUtils.mathFuncs;
 import org.firstinspires.ftc.teamcode.Decode.drivetrains.swervePod;
-import org.firstinspires.ftc.teamcode.Decode.MathUtils.Vector;
-import org.firstinspires.ftc.teamcode.Decode.swerveConstants;
+import org.firstinspires.ftc.teamcode.Decode.MathUtils.vector;
 
 @TeleOp
 public class swerveManipulation extends OpMode{
@@ -26,11 +20,11 @@ public class swerveManipulation extends OpMode{
 
     private DcMotorEx left0, left1, right0, right1;
 
-    private Vector
-            leftStickVector  = new Vector(),
-            rightStickVector = new Vector(),
-            leftTurnVector   = new Vector(rightStickVector.getXComponent(), Math.toRadians(90)),
-            rightTurnVector  = new Vector(rightStickVector.getXComponent(), Math.toRadians(-90));
+    private vector
+            leftStickVector  = new vector(),
+            rightStickVector = new vector(),
+            leftTurnVector   = new vector(rightStickVector.getXComponent(), Math.toRadians(90)),
+            rightTurnVector  = new vector(rightStickVector.getXComponent(), Math.toRadians(-90));
 
     private int mode = 0;
     

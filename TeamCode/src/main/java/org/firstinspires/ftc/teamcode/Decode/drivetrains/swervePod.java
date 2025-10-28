@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode.Decode.drivetrains;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import org.firstinspires.ftc.teamcode.Decode.MathUtils.Vector;
+import org.firstinspires.ftc.teamcode.Decode.MathUtils.vector;
 import org.firstinspires.ftc.teamcode.Decode.MathUtils.mathFuncs;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
@@ -10,11 +10,11 @@ public class swervePod {
     private HardwareMap hardwareMap;
 
     private DcMotorEx motor0, motor1;
-    private Vector heading = new Vector();
+    private vector heading = new vector();
     private double radiansPerTick = 1692;
 
     //Tangent to robot center in direction of positive radian turning
-    public Vector turnVector = new Vector(1, Math.toRadians(90));
+    public vector turnVector = new vector(1, Math.toRadians(90));
     public double startingHeading = Math.toRadians(90);
     public double driveDecay = 2.5;
 
@@ -80,7 +80,7 @@ public class swervePod {
      * Applies the necessary motor powers for the swerve drive to apporach and drive a given vector<br>
      * @param driveVector Desired direction of wheel, and magnitude of drive power (left stick input or auto equivalent)
      */
-    public void turnAndDrive(Vector driveVector){
+    public void turnAndDrive(vector driveVector){
         double[] drivePowers = getDrivePowers(driveVector);
 
         motor0.setPower(drivePowers[0]);
@@ -93,7 +93,7 @@ public class swervePod {
      * @param driveVector the desired vector
      * @return
      */
-    public double[] getDrivePowers(Vector driveVector){
+    public double[] getDrivePowers(vector driveVector){
         updateHeading();
         driveVector.setMagnitude(mathFuncs.clamp(driveVector.getMagnitude(), -1, 1));
 
@@ -120,7 +120,7 @@ public class swervePod {
     }
 
     //Used for debugging
-    public double[] getDriveComponents(Vector driveVector){
+    public double[] getDriveComponents(vector driveVector){
         updateHeading();
         driveVector.setMagnitude(mathFuncs.clamp(driveVector.getMagnitude(), -1, 1));
 

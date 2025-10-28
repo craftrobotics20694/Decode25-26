@@ -2,9 +2,9 @@ package org.firstinspires.ftc.teamcode.Decode.MathUtils;
 
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.math.Matrix;
-import org.firstinspires.ftc.teamcode.Decode.MathUtils.mathFuncs;
-
-public class Vector {
+import com.pedropathing.math.Vector;
+import static org.firstinspires.ftc.teamcode.Decode.MathUtils.mathFuncs.*;
+public class vector {
     /**
      * The magnitude (length) of the vector.
      */
@@ -25,7 +25,7 @@ public class Vector {
     /**
      * Constructs a new Vector with zero magnitude and direction.
      */
-    public Vector() {
+    public vector() {
         setComponents(0, 0);
     }
 
@@ -34,7 +34,7 @@ public class Vector {
      *
      * @param pose the Pose object to extract x and y from
      */
-    public Vector(Pose pose) {
+    public vector(Pose pose) {
         setOrthogonalComponents(pose.getX(), pose.getY());
     }
 
@@ -44,10 +44,11 @@ public class Vector {
      * @param magnitude the magnitude (length) of the vector
      * @param theta     the direction (angle in radians) of the vector
      */
-    public Vector(double magnitude, double theta) {
+    public vector(double magnitude, double theta) {
         setComponents(magnitude, theta);
     }
 
+    public vector(Vector vector){setComponents(vector.getMagnitude(), vector.getTheta());}
     /**
      * Sets the vector's magnitude and direction (polar coordinates).
      * Updates the Cartesian components accordingly.
@@ -58,10 +59,10 @@ public class Vector {
     public void setComponents(double magnitude, double theta) {
         if (magnitude < 0) {
             this.magnitude = -magnitude;
-            this.theta = mathFuncs.mod(theta + Math.PI,  2*Math.PI);
+            this.theta = mod(theta + Math.PI,  2*Math.PI);
         } else {
             this.magnitude = magnitude;
-            this.theta = mathFuncs.mod(theta, 2*Math.PI);
+            this.theta = mod(theta, 2*Math.PI);
         }
         xComponent = magnitude * Math.cos(this.theta);
         yComponent = magnitude * Math.sin(this.theta);
@@ -94,8 +95,8 @@ public class Vector {
         setTheta(theta + theta2);
     }
     
-    public Vector rotated(double theta2){
-        return new Vector(magnitude, theta + theta2);
+    public vector rotated(double theta2){
+        return new vector(magnitude, theta + theta2);
     }
 
     /**
@@ -109,7 +110,7 @@ public class Vector {
         xComponent = x;
         yComponent = y;
         magnitude = Math.sqrt((x*x)+(y*y));
-        theta = mathFuncs.mod(Math.atan2(y,x), 2 * Math.PI);
+        theta = mod(Math.atan2(y,x), 2 * Math.PI);
     }
 
     /**
@@ -118,8 +119,8 @@ public class Vector {
      * @param scalar the scalar multiplying into the Vector.
      * @return returns the scaled Vector.
      */
-    public Vector times(double scalar) {
-        return new Vector(getMagnitude() * scalar, getTheta());
+    public vector times(double scalar) {
+        return new vector(getMagnitude() * scalar, getTheta());
     }
 
     /**
@@ -128,11 +129,11 @@ public class Vector {
      *
      * @return returns the normalized (or zero) Vector.
      */
-    public Vector normalize() {
+    public vector normalize() {
         if (getMagnitude() == 0) {
-            return new Vector(0.0, getTheta());
+            return new vector(0.0, getTheta());
         } else {
-            return new Vector(getMagnitude() / Math.abs(getMagnitude()), getTheta());
+            return new vector(getMagnitude() / Math.abs(getMagnitude()), getTheta());
         }
     }
 
@@ -142,8 +143,8 @@ public class Vector {
      * @param other the other Vector.
      * @return returns the sum of the Vectors.
      */
-    public Vector plus(Vector other) {
-        Vector returnVector = new Vector();
+    public vector plus(vector other) {
+        vector returnVector = new vector();
         returnVector.setOrthogonalComponents(getXComponent() + other.getXComponent(), getYComponent() + other.getYComponent());
         return returnVector;
     }
@@ -155,8 +156,8 @@ public class Vector {
      * @param other the other Vector.
      * @return returns the second Vector subtracted from the first Vector.
      */
-    public Vector minus(Vector other) {
-        Vector returnVector = new Vector();
+    public vector minus(vector other) {
+        vector returnVector = new vector();
         returnVector.setOrthogonalComponents(getXComponent() - other.getXComponent(), getYComponent() - other.getYComponent());
         return returnVector;
     }
@@ -167,7 +168,7 @@ public class Vector {
      * @param other the Other Vector.
      * @return returns the dot product of the two Vectors.
      */
-    public double dot(Vector other) {
+    public double dot(vector other) {
         return getXComponent() * other.getXComponent() + getYComponent() * other.getYComponent();
     }
 
@@ -178,7 +179,7 @@ public class Vector {
      * @param other the other Vector.
      * @return returns the cross product of the two Vectors.
      */
-    public double cross(Vector other) {
+    public double cross(vector other) {
         return getXComponent() * other.getYComponent() - getYComponent() * other.getXComponent();
     }
 
@@ -189,7 +190,7 @@ public class Vector {
      * @param scaleOther the second coefficient for the other vector
      * @return the resulting vector
      */
-    public Vector linearCombination(Vector other, double scaleThis, double scaleOther) {
+    public vector linearCombination(vector other, double scaleThis, double scaleOther) {
         return times(scaleThis).plus(other.times(scaleOther));
     }
 
@@ -234,8 +235,8 @@ public class Vector {
      *
      * @return a new Vector with the same magnitude and direction
      */
-    public Vector copy() {
-        return new Vector(this.magnitude, this.theta);
+    public vector copy() {
+        return new vector(this.magnitude, this.theta);
     }
 
     /**
@@ -259,9 +260,9 @@ public class Vector {
      * @param matrix the matrix transformation
      * @return the resulting vector after applying the transformation
      */
-    public Vector transform(Matrix matrix) {
+    public vector transform(Matrix matrix) {
         double[] multiply = matrix.multiply(new Matrix(new double[][]{{xComponent}, {yComponent}})).getCol(0);
-        return new Vector(multiply[0], multiply[1]);
+        return new vector(multiply[0], multiply[1]);
     }
 
     /**
@@ -270,8 +271,8 @@ public class Vector {
      * @param other the vector to project onto
      * @return a new vector that is the projection of this vector onto the other vector
      */
-    public Vector projectOnto(Vector other) {
-        if (other.getMagnitude() == 0) return new Vector();
+    public vector projectOnto(vector other) {
+        if (other.getMagnitude() == 0) return new vector();
         double scale = this.dot(other) / other.dot(other);
         return other.times(scale);
     }

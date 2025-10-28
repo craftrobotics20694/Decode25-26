@@ -7,7 +7,7 @@ import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
-import org.firstinspires.ftc.teamcode.Decode.MathUtils.Vector;
+import org.firstinspires.ftc.teamcode.Decode.MathUtils.vector;
 import com.pedropathing.paths.HeadingInterpolator;
 import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
@@ -27,7 +27,7 @@ public class mecanumManual extends OpMode {
     private Supplier<PathChain> pathChain;
     private TelemetryManager telemetryM;
     private boolean fieldCentric = false;
-    private Vector targetVector;
+    private vector targetVector;
     private Panels panels = Panels.INSTANCE;
 
     @Override

@@ -1,11 +1,13 @@
 package org.firstinspires.ftc.teamcode.Decode.drivetrains;
 
-import static com.pedropathing.math.MathFunctions.findNormalizingScaling;
-
 import com.pedropathing.Drivetrain;
 import com.pedropathing.math.Vector;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+
+import org.firstinspires.ftc.teamcode.Decode.MathUtils.vector;
+import static org.firstinspires.ftc.teamcode.Decode.MathUtils.mathFuncs.*;
+import org.firstinspires.ftc.teamcode.Decode.drivetrains.swervePod;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
@@ -24,10 +26,8 @@ import java.util.List;
  */
 public class Swerve extends Drivetrain {
     public SwerveConstants constants;
-    private final DcMotorEx left0;
-    private final DcMotorEx left1;
-    private final DcMotorEx right0;
-    private final DcMotorEx right1;
+    private final DcMotorEx left0, left1, right0, right1;
+    private swervePod leftPod, rightPod;
     private final List<DcMotorEx> motors;
     private final VoltageSensor voltageSensor;
     private double motorCachingThreshold;
@@ -55,6 +55,9 @@ public class Swerve extends Drivetrain {
         left1 = hardwareMap.get(DcMotorEx.class, swerveConstants.leftMotor1);
         right1 = hardwareMap.get(DcMotorEx.class, swerveConstants.rightMotor0);
         right0 = hardwareMap.get(DcMotorEx.class, swerveConstants.rightMotor1);
+        
+        leftPod.assignMotors(left0,left1);
+        rightPod.assignMotors(right0,right1);
 
         motors = Arrays.asList(left0, left1, right0, right1);
 
@@ -66,13 +69,6 @@ public class Swerve extends Drivetrain {
 
         setMotorsToFloat();
         breakFollowing();
-
-        Vector copiedFrontLeftVector = swerveConstants.frontLeftVector.normalize();
-        vectors = new Vector[]{
-                new Vector(copiedFrontLeftVector.getMagnitude(), copiedFrontLeftVector.getTheta()),
-                new Vector(copiedFrontLeftVector.getMagnitude(), 2 * Math.PI - copiedFrontLeftVector.getTheta()),
-                new Vector(copiedFrontLeftVector.getMagnitude(), 2 * Math.PI - copiedFrontLeftVector.getTheta()),
-                new Vector(copiedFrontLeftVector.getMagnitude(), copiedFrontLeftVector.getTheta())};
     }
 
     public void updateConstants() {
@@ -115,78 +111,71 @@ public class Swerve extends Drivetrain {
             pathingPower.setMagnitude(maxPowerScaling);
 
         // the powers for the wheel vectors
-        double[] wheelPowers = new double[4];
+        double[] motorPowers = new double[4];
+        double scalingFactor;
+        vector leftVector = new vector(correctivePower),
+               rightVector = new vector(correctivePower),
+               leftTurn = constants.leftPodTurn.times(headingPower.getMagnitude()),
+               rightTurn = constants.rightPodTurn.times(headingPower.getMagnitude());
 
-        // This contains a copy of the mecanum wheel vectors
-        Vector[] mecanumVectorsCopy = new Vector[4];
+        //This is mostly copy paste once for each Vector parameter, the order determines what is prioritized
 
-        // this contains the pathing vectors, one for each side (heading control requires 2)
-        Vector[] truePathingVectors = new Vector[2];
+        //Makes our version of a vector out of correctivePower
+        vector newCorrectivePower = new vector(correctivePower);
+        //NormalizingScaling is how much the tacked-on vector needs to be multiplied by so that the resulting vector's magnitude is 1
+        //We do this so that no vector exceeds a magnitude of 1
+        //We multiply both tacked-on vectors by the resulting factor so that movement is proportional and things don't break
+        scalingFactor = Math.min(Math.min(
+                        findNormalizingScaling(leftVector,  newCorrectivePower, maxPowerScaling),
+                        findNormalizingScaling(rightVector, newCorrectivePower, maxPowerScaling)),
+                        1);
+        leftVector  = leftVector .plus(leftTurn .times(scalingFactor));
+        rightVector = rightVector.plus(rightTurn.times(scalingFactor));
 
-        if (correctivePower.getMagnitude() == maxPowerScaling) {
-            // checks for corrective power equal to max power scaling in magnitude. if equal, then set pathing power to that
-            truePathingVectors[0] = correctivePower.copy();
-            truePathingVectors[1] = correctivePower.copy();
-        } else {
-            // corrective power did not take up all the power, so add on heading power
-            Vector leftSideVector = correctivePower.minus(headingPower);
-            Vector rightSideVector = correctivePower.plus(headingPower);
+        //Adds turning power (headingPower)
+        scalingFactor = Math.min(Math.min(
+                findNormalizingScaling(leftVector,  leftTurn,  maxPowerScaling),
+                findNormalizingScaling(rightVector, rightTurn, maxPowerScaling)),
+                1);
+        leftVector  = leftVector .plus(leftTurn .times(scalingFactor));
+        rightVector = rightVector.plus(rightTurn.times(scalingFactor));
 
-            if (leftSideVector.getMagnitude() > maxPowerScaling || rightSideVector.getMagnitude() > maxPowerScaling) {
-                //if the combined corrective and heading power is greater than 1, then scale down heading power
-                double headingScalingFactor = Math.min(findNormalizingScaling(correctivePower, headingPower, maxPowerScaling), findNormalizingScaling(correctivePower, headingPower.times(-1), maxPowerScaling));
-                truePathingVectors[0] = correctivePower.minus(headingPower.times(headingScalingFactor));
-                truePathingVectors[1] = correctivePower.plus(headingPower.times(headingScalingFactor));
-            } else {
-                // if we're here then we can add on some drive power but scaled down to 1
-                Vector leftSideVectorWithPathing = leftSideVector.plus(pathingPower);
-                Vector rightSideVectorWithPathing = rightSideVector.plus(pathingPower);
+        //Adds pathing power (pathingPower)
+        vector newPathingPower = new vector(pathingPower);
+        scalingFactor = Math.min(Math.min(
+                findNormalizingScaling(leftVector,  newPathingPower, maxPowerScaling),
+                findNormalizingScaling(rightVector, newPathingPower, maxPowerScaling)),
+                1);
+        leftVector  = leftVector .plus(newPathingPower.times(scalingFactor));
+        rightVector = rightVector.plus(newPathingPower.times(scalingFactor));
 
-                if (leftSideVectorWithPathing.getMagnitude() > maxPowerScaling || rightSideVectorWithPathing.getMagnitude() > maxPowerScaling) {
-                    // too much power now, so we scale down the pathing vector
-                    double pathingScalingFactor = Math.min(findNormalizingScaling(leftSideVector, pathingPower, maxPowerScaling), findNormalizingScaling(rightSideVector, pathingPower, maxPowerScaling));
-                    truePathingVectors[0] = leftSideVector.plus(pathingPower.times(pathingScalingFactor));
-                    truePathingVectors[1] = rightSideVector.plus(pathingPower.times(pathingScalingFactor));
-                } else {
-                    // just add the vectors together and you get the final vector
-                    truePathingVectors[0] = leftSideVectorWithPathing.copy();
-                    truePathingVectors[1] = rightSideVectorWithPathing.copy();
-                }
-            }
-        }
+        //Now we assign motor powers using the return of swervePod.getDrivePowers()
+        double[] leftPowers = leftPod.getDrivePowers(leftVector);
+        double[] rightPowers = rightPod.getDrivePowers(rightVector);
 
-        truePathingVectors[0] = truePathingVectors[0].times(2.0);
-        truePathingVectors[1] = truePathingVectors[1].times(2.0);
-
-        for (int i = 0; i < mecanumVectorsCopy.length; i++) {
-            // this copies the vectors from mecanumVectors but creates new references for them
-            mecanumVectorsCopy[i] = vectors[i].copy();
-
-            mecanumVectorsCopy[i].rotateVector(robotHeading);
-        }
-
-        wheelPowers[0] = (mecanumVectorsCopy[1].getXComponent() * truePathingVectors[0].getYComponent() - truePathingVectors[0].getXComponent() * mecanumVectorsCopy[1].getYComponent()) / (mecanumVectorsCopy[1].getXComponent() * mecanumVectorsCopy[0].getYComponent() - mecanumVectorsCopy[0].getXComponent() * mecanumVectorsCopy[1].getYComponent());
-        wheelPowers[1] = (mecanumVectorsCopy[0].getXComponent() * truePathingVectors[0].getYComponent() - truePathingVectors[0].getXComponent() * mecanumVectorsCopy[0].getYComponent()) / (mecanumVectorsCopy[0].getXComponent() * mecanumVectorsCopy[1].getYComponent() - mecanumVectorsCopy[1].getXComponent() * mecanumVectorsCopy[0].getYComponent());
-        wheelPowers[2] = (mecanumVectorsCopy[3].getXComponent() * truePathingVectors[1].getYComponent() - truePathingVectors[1].getXComponent() * mecanumVectorsCopy[3].getYComponent()) / (mecanumVectorsCopy[3].getXComponent() * mecanumVectorsCopy[2].getYComponent() - mecanumVectorsCopy[2].getXComponent() * mecanumVectorsCopy[3].getYComponent());
-        wheelPowers[3] = (mecanumVectorsCopy[2].getXComponent() * truePathingVectors[1].getYComponent() - truePathingVectors[1].getXComponent() * mecanumVectorsCopy[2].getYComponent()) / (mecanumVectorsCopy[2].getXComponent() * mecanumVectorsCopy[3].getYComponent() - mecanumVectorsCopy[3].getXComponent() * mecanumVectorsCopy[2].getYComponent());
+        motorPowers[0] = leftPowers[0];
+        motorPowers[1] = leftPowers[1];
+        motorPowers[2] = rightPowers[0];
+        motorPowers[3] = rightPowers[1];
 
         if (voltageCompensation) {
             double voltageNormalized = getVoltageNormalized();
-            for (int i = 0; i < wheelPowers.length; i++) {
-                wheelPowers[i] *= voltageNormalized;
+            for (int i = 0; i < motorPowers.length; i++) {
+                motorPowers[i] *= voltageNormalized;
             }
         }
 
-        double wheelPowerMax = Math.max(Math.max(Math.abs(wheelPowers[0]), Math.abs(wheelPowers[1])), Math.max(Math.abs(wheelPowers[2]), Math.abs(wheelPowers[3])));
+        //Failsafe if any power is greater than max power, in theory it shouldn't happen
+        double wheelPowerMax = Math.max(Math.max(Math.abs(motorPowers[0]), Math.abs(motorPowers[1])), Math.max(Math.abs(motorPowers[2]), Math.abs(motorPowers[3])));
 
         if (wheelPowerMax > maxPowerScaling) {
-            wheelPowers[0] = (wheelPowers[0] / wheelPowerMax) * maxPowerScaling;
-            wheelPowers[1] = (wheelPowers[1] / wheelPowerMax) * maxPowerScaling;
-            wheelPowers[2] = (wheelPowers[2] / wheelPowerMax) * maxPowerScaling;
-            wheelPowers[3] = (wheelPowers[3] / wheelPowerMax) * maxPowerScaling;
+            motorPowers[0] = (motorPowers[0] / wheelPowerMax) * maxPowerScaling;
+            motorPowers[1] = (motorPowers[1] / wheelPowerMax) * maxPowerScaling;
+            motorPowers[2] = (motorPowers[2] / wheelPowerMax) * maxPowerScaling;
+            motorPowers[3] = (motorPowers[3] / wheelPowerMax) * maxPowerScaling;
         }
 
-        return wheelPowers;
+        return motorPowers;
     }
 
     /**
