@@ -5,12 +5,15 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
+import org.firstinspires.ftc.teamcode.Decode.drivetrains.Swerve;
+import org.firstinspires.ftc.teamcode.Decode.swerveConstants;
 import org.firstinspires.ftc.teamcode.Decode.MathUtils.mathFuncs;
 import org.firstinspires.ftc.teamcode.Decode.drivetrains.swervePod;
 import org.firstinspires.ftc.teamcode.Decode.MathUtils.vector;
 
 @TeleOp
 public class swerveManipulation extends OpMode{
+    private Swerve drivetrain = new Swerve(hardwareMap, swerveConstants.swerveConstants);
     private Follower follower;
     private final double startingHeading = Math.toRadians(90);
 
@@ -23,8 +26,10 @@ public class swerveManipulation extends OpMode{
     private vector
             leftStickVector  = new vector(),
             rightStickVector = new vector(),
-            leftTurnVector   = new vector(rightStickVector.getXComponent(), Math.toRadians(90)),
-            rightTurnVector  = new vector(rightStickVector.getXComponent(), Math.toRadians(-90));
+            leftTurnVector   = swerveConstants.swerveConstants.leftPodTurn,
+            rightTurnVector  = swerveConstants.swerveConstants.leftPodTurn,
+            leftPodTargetVector = new vector(),
+            rightPodTargetVector = new vector();
 
     private int mode = 0;
     
@@ -67,31 +72,38 @@ public class swerveManipulation extends OpMode{
 
         switch(mode) {
             case 0:
+                //Most direct mechanics, each pod relates to a stick, left-right controls yaw rotation, up-down controls drive power
                 left0 .setPower(leftStickVector .rotated(Math.toRadians(-45)).getYComponent());
                 left1 .setPower(leftStickVector .rotated(Math.toRadians(-45)).getXComponent());
                 right0.setPower(rightStickVector.rotated(Math.toRadians(-45)).getYComponent());
                 right1.setPower(rightStickVector.rotated(Math.toRadians(-45)).getXComponent());
                 break;
             case 1:
+                //Utilizing swervePod.turnAndDrive robot will strafe in direction of left stick input
                 leftPod .turnAndDrive(leftStickVector);
                 rightPod.turnAndDrive(leftStickVector);
                 break;
             case 2:
-                leftStickVector  = leftStickVector .plus(leftTurnVector );
-                rightStickVector = rightStickVector.plus(rightTurnVector);
-                double maxMagnitude = Math.max(leftStickVector .plus(leftTurnVector ).getMagnitude(),
-                                               rightStickVector.plus(rightTurnVector).getMagnitude());
-                if (mode==2) {
-                    leftPod.turnAndDrive(leftStickVector.plus(leftTurnVector).times(1 / maxMagnitude));
-                    rightPod.turnAndDrive(rightStickVector.plus(rightTurnVector).times(1 / maxMagnitude));
-                    break;
-                }
-//            case 3:
-//                leftStickVector.rotateVector(-(follower.getHeading()-startingHeading));
-//                rightStickVector.rotateVector(-(follower.getHeading()-startingHeading));
-//                leftPod.turnAndDrive(leftStickVector.plus(leftTurnVector));
-//                rightPod.turnAndDrive(rightStickVector.plus(rightTurnVector));
-//                break;
+                //Robot-centric strafe and turn, with naive turn logic
+                //Set target vector as sum of strafe vector (leftStickVector), and turn vector (leftTurnVector) times right stick input
+                leftPodTargetVector  = leftStickVector.plus(leftTurnVector .times(rightStickVector.getXComponent()));
+                rightPodTargetVector = leftStickVector.plus(rightTurnVector.times(rightStickVector.getXComponent()));
+                double maxMagnitude = Math.max(leftPodTargetVector.getMagnitude(), rightPodTargetVector.getMagnitude());
+                leftPodTargetVector = leftPodTargetVector.times(1/maxMagnitude);
+                rightPodTargetVector = rightPodTargetVector.times(1/maxMagnitude);
+
+                //Run motors
+                leftPod.turnAndDrive(leftPodTargetVector);
+                rightPod.turnAndDrive(rightPodTargetVector);
+                break;
+            case 3:
+                //Field centric strafe and turn, with advanced turn logic
+                //Mirrors Swerve.calculateDrive
+                leftStickVector.rotateVector(-(follower.getHeading()-startingHeading));
+                rightStickVector.rotateVector(-(follower.getHeading()-startingHeading));
+                leftPod.turnAndDrive(leftStickVector.plus(leftTurnVector));
+                rightPod.turnAndDrive(rightStickVector.plus(rightTurnVector));
+                break;
         }
 
         if (gamepad1.aWasPressed()){ mode = (mode + 1) % 3; }

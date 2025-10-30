@@ -9,8 +9,8 @@ public class mathFuncs {
     }
 
     /**
-     * @param value
-     * @param divisor
+     * @param value numerator
+     * @param divisor denominator
      * @return Positive result of modulus operation
      */
     public static double mod(double value, double divisor) {

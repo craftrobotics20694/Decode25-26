@@ -30,6 +30,7 @@ public class SwerveConstants {
     public  DcMotorSimple.Direction rightMotor1Direction = DcMotorSimple.Direction.FORWARD;
     public vector leftPodTurn = new vector(1, Math.toRadians(-90)),
                   rightPodTurn = new vector(1, Math.toRadians(90));
+    public double leftPodX, leftPodY, rightPodX, rightPodY;
     public  double motorCachingThreshold = 0.01;
     public  boolean useBrakeModeInTeleOp = false;
     public  boolean useVoltageCompensation = false;
@@ -95,13 +96,38 @@ public class SwerveConstants {
         return this;
     }
     //Angle for rotation is perpendicular to the vector to the wheel
-    public SwerveConstants setLeftPodTurn(double x, double y){
-        leftPodTurn.setTheta(Math.atan2(y,x)+Math.toRadians(90));
+
+    /**
+     * Sets and normalizes the turn vector based on the offset of the wheel from center
+     * @param x unit doesn't matter so long as its consistent, but I'm declaring that you use inches
+     * @param y
+     * @return
+     */
+    public SwerveConstants setLeftPod(double x, double y){
+        leftPodX = x;
+        leftPodY = y;
+        leftPodTurn.setOrthogonalComponents(x,y);
+        leftPodTurn.rotateVector(90);
+        double scalingFactor = Math.max(leftPodTurn.getMagnitude(), rightPodTurn.getMagnitude());
+        leftPodTurn.setMagnitude(leftPodTurn.getMagnitude()/scalingFactor);
+        rightPodTurn.setMagnitude(rightPodTurn.getMagnitude()/scalingFactor);
         return this;
     }
 
-    public SwerveConstants setRightPodTurn(double x, double y){
-        rightPodTurn.setTheta(Math.atan2(y,x)+Math.toRadians(90));
+    /**
+     * Sets and normalizes the turn vector based on the offset of the wheel from center
+     * @param x unit doesn't matter so long as its consistent, but I'm declaring that you use inches
+     * @param y
+     * @return
+     */
+    public SwerveConstants setRightPod(double x, double y){
+        rightPodX = x;
+        rightPodY = y;
+        rightPodTurn.setOrthogonalComponents(x,y);
+        rightPodTurn.rotateVector(90);
+        double scalingFactor = Math.max(leftPodTurn.getMagnitude(), rightPodTurn.getMagnitude());
+        leftPodTurn.setMagnitude(leftPodTurn.getMagnitude()/scalingFactor);
+        rightPodTurn.setMagnitude(rightPodTurn.getMagnitude()/scalingFactor);
         return this;
     }
     public SwerveConstants motorCachingThreshold(double motorCachingThreshold) {

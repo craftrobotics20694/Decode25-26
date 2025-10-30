@@ -27,7 +27,9 @@ public class swerveConstants {
      */
     public static SwerveConstants swerveConstants = new SwerveConstants()
             .xVelocity(61.0)
-            .yVelocity(42.29);
+            .yVelocity(42.29)
+            .setLeftPod(-1,0)
+            .setRightPod(1,0);
 
     public static TwoWheelConstants localizerConstants = new TwoWheelConstants()
             .forwardEncoder_HardwareMapName("rightBack")

@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.Decode.MathUtils;
 
 import com.pedropathing.geometry.Pose;
-import com.pedropathing.math.Matrix;
 import com.pedropathing.math.Vector;
 import static org.firstinspires.ftc.teamcode.Decode.MathUtils.mathFuncs.*;
 public class vector {
@@ -69,7 +68,7 @@ public class vector {
     }
 
     /**
-     * Sets only the magnitude of the vector, keeping the direction unchanged.
+     * Sets vector magnitude, theta is static
      *
      * @param magnitude the new magnitude
      */
@@ -78,16 +77,16 @@ public class vector {
     }
 
     /**
-     * Sets only the direction (theta) of the vector, keeping the magnitude unchanged.
+     * Sets vector theta, magnitude is static
      *
-     * @param theta the new direction (angle in radians)
+     * @param theta the new direction (radians)
      */
     public void setTheta(double theta) {
         setComponents(magnitude, theta);
     }
 
     /**
-     * Rotates the vector by a given angle (in radians).
+     * Rotates the vector by a given angle
      *
      * @param theta2 the angle to add to the current direction
      */
@@ -138,10 +137,9 @@ public class vector {
     }
 
     /**
-     * This returns a Vector that is the sum of the this vector and the other input Vector.
-     *
-     * @param other the other Vector.
-     * @return returns the sum of the Vectors.
+     * Returns the sum of two vectors without modifying either
+     * @param other the adder
+     * @return returns the sum of this vector + param
      */
     public vector plus(vector other) {
         vector returnVector = new vector();
@@ -150,63 +148,25 @@ public class vector {
     }
 
     /**
-     * This subtracts the other Vector from the current Vector and returns the result as a Vector.
-     * Do note that order matters here.
-     *
-     * @param other the other Vector.
-     * @return returns the second Vector subtracted from the first Vector.
+     * Returns the difference of two vectors without modifying either
+     * @param other the subtractor
+     * @return the difference of this vector - param
      */
     public vector minus(vector other) {
         vector returnVector = new vector();
-        returnVector.setOrthogonalComponents(getXComponent() - other.getXComponent(), getYComponent() - other.getYComponent());
+        returnVector = this.plus(other.rotated(Math.PI));
         return returnVector;
     }
 
     /**
-     * This computes the dot product of the current Vector and the other Vector.
-     *
-     * @param other the Other Vector.
-     * @return returns the dot product of the two Vectors.
-     */
-    public double dot(vector other) {
-        return getXComponent() * other.getXComponent() + getYComponent() * other.getYComponent();
-    }
-
-    /**
-     * This computes the current Vector crossed with the other Vector, so a cross product.
-     * Do note that order matters here.
-     *
-     * @param other the other Vector.
-     * @return returns the cross product of the two Vectors.
-     */
-    public double cross(vector other) {
-        return getXComponent() * other.getYComponent() - getYComponent() * other.getXComponent();
-    }
-
-    /**
-     * This returns a Vector that is the linear combination of the current vector and another vector.
-     * @param other the other vector
-     * @param scaleThis the coefficient for the current vector
-     * @param scaleOther the second coefficient for the other vector
-     * @return the resulting vector
-     */
-    public vector linearCombination(vector other, double scaleThis, double scaleOther) {
-        return times(scaleThis).plus(other.times(scaleOther));
-    }
-
-    /**
-     * Returns the magnitude (length) of the vector.
-     *
-     * @return the magnitude
+     * @return magnitude
      */
     public double getMagnitude() {
         return magnitude;
     }
 
     /**
-     * Returns the direction (angle in radians) of the vector.
-     *
-     * @return the theta value
+     * @return theta (radians)
      */
     public double getTheta() {
         return theta;
@@ -252,28 +212,5 @@ public class vector {
                 ", xComponent=" + xComponent +
                 ", yComponent=" + yComponent +
                 '}';
-    }
-
-    /**
-     * Transforms the vector by multiplying it with a matrix
-     *
-     * @param matrix the matrix transformation
-     * @return the resulting vector after applying the transformation
-     */
-    public vector transform(Matrix matrix) {
-        double[] multiply = matrix.multiply(new Matrix(new double[][]{{xComponent}, {yComponent}})).getCol(0);
-        return new vector(multiply[0], multiply[1]);
-    }
-
-    /**
-     * Projects this vector onto another vector.
-     *
-     * @param other the vector to project onto
-     * @return a new vector that is the projection of this vector onto the other vector
-     */
-    public vector projectOnto(vector other) {
-        if (other.getMagnitude() == 0) return new vector();
-        double scale = this.dot(other) / other.dot(other);
-        return other.times(scale);
     }
 }

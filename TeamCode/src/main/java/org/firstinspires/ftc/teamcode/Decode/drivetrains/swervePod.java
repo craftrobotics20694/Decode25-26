@@ -16,7 +16,7 @@ public class swervePod {
     //Tangent to robot center in direction of positive radian turning
     public vector turnVector = new vector(1, Math.toRadians(90));
     public double startingHeading = Math.toRadians(90);
-    public double driveDecay = 2.5;
+    public double driveDecay = 25;
 
     /**
      * Assigns motors to prexisting motor objects
@@ -52,14 +52,6 @@ public class swervePod {
 
         motor1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         motor1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-    }
-
-    /**
-     * Inverts both motor directions
-     */
-    public void reverseMotors(){
-        motor0.setDirection(motor0.getDirection().inverted());
-        motor1.setDirection(motor1.getDirection().inverted());
     }
 
     private void updateHeading(){

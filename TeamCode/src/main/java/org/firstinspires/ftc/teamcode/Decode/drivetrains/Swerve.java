@@ -27,7 +27,8 @@ import java.util.List;
 public class Swerve extends Drivetrain {
     public SwerveConstants constants;
     private final DcMotorEx left0, left1, right0, right1;
-    private swervePod leftPod, rightPod;
+    private final swervePod leftPod = new swervePod(),
+                            rightPod = new swervePod();
     private final List<DcMotorEx> motors;
     private final VoltageSensor voltageSensor;
     private double motorCachingThreshold;
@@ -122,9 +123,9 @@ public class Swerve extends Drivetrain {
 
         //Makes our version of a vector out of correctivePower
         vector newCorrectivePower = new vector(correctivePower);
-        //NormalizingScaling is how much the tacked-on vector needs to be multiplied by so that the resulting vector's magnitude is 1
+        //NormalizingScaling is the factor applied to the variable vector such when it is summed with the static vector the resultant vector's magnitude is 1
         //We do this so that no vector exceeds a magnitude of 1
-        //We multiply both tacked-on vectors by the resulting factor so that movement is proportional and things don't break
+        //We multiply both tacked-on vectors by same factor so that movement is proportional and things don't break
         scalingFactor = Math.min(Math.min(
                         findNormalizingScaling(leftVector,  newCorrectivePower, maxPowerScaling),
                         findNormalizingScaling(rightVector, newCorrectivePower, maxPowerScaling)),
