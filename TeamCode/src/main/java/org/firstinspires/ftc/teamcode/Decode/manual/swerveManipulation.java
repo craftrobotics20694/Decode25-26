@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.Decode.MathUtils.vector;
 
 @TeleOp
 public class swerveManipulation extends OpMode{
-    private Swerve drivetrain = new Swerve(hardwareMap, swerveConstants.swerveConstants);
+    private Swerve drivetrain;
     private Follower follower;
     private final double startingHeading = Math.toRadians(90);
 
@@ -52,6 +52,7 @@ public class swerveManipulation extends OpMode{
                 hardwareMap.get(DcMotorEx.class, "right0"),
                 hardwareMap.get(DcMotorEx.class, "right1")
         );
+         drivetrain = new Swerve(hardwareMap, swerveConstants.swerveConstants);
     }
     
     @Override
@@ -96,14 +97,14 @@ public class swerveManipulation extends OpMode{
                 leftPod.turnAndDrive(leftPodTargetVector);
                 rightPod.turnAndDrive(rightPodTargetVector);
                 break;
-            case 3:
-                //Field centric strafe and turn, with advanced turn logic
-                //Mirrors Swerve.calculateDrive
-                leftStickVector.rotateVector(-(follower.getHeading()-startingHeading));
-                rightStickVector.rotateVector(-(follower.getHeading()-startingHeading));
-                leftPod.turnAndDrive(leftStickVector.plus(leftTurnVector));
-                rightPod.turnAndDrive(rightStickVector.plus(rightTurnVector));
-                break;
+//            case 3:
+//                //Field centric strafe and turn, with advanced turn logic
+//                //Mirrors Swerve.calculateDrive
+//                leftStickVector.rotateVector(-(follower.getHeading()-startingHeading));
+//                rightStickVector.rotateVector(-(follower.getHeading()-startingHeading));
+//                leftPod.turnAndDrive(leftStickVector.plus(leftTurnVector));
+//                rightPod.turnAndDrive(rightStickVector.plus(rightTurnVector));
+//                break;
         }
 
         if (gamepad1.aWasPressed()){ mode = (mode + 1) % 3; }
