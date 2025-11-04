@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode.Decode.drivetrains;
 
 import org.firstinspires.ftc.teamcode.Decode.drivetrains.Swerve;
 import com.pedropathing.geometry.Pose;
-import com.pedropathing.math.Vector;
+import org.firstinspires.ftc.teamcode.Decode.MathUtils.vector;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 public class SwerveConstants {
@@ -14,13 +14,11 @@ public class SwerveConstants {
      *  Default Value: 65.43028 */
     public  double yVelocity = 65.43028;
 
-    private  double[] convertToPolar = Pose.cartesianToPolar(xVelocity, -yVelocity);
 
     /** The actual drive vector for the front left wheel, if the robot is facing a heading of 0 radians with the wheel centered at (0,0)
      *  Default Value: new Vector(convertToPolar[0], convertToPolar[1])
      * @implNote This vector should not be changed, but only accessed.
      */
-    public Vector frontLeftVector = new Vector(convertToPolar[0], convertToPolar[1]).normalize();
     public  double maxPower = 1;
     public  String leftMotor0 = "left0";
     public  String leftMotor1 = "left1";
@@ -30,6 +28,9 @@ public class SwerveConstants {
     public  DcMotorSimple.Direction leftMotor1Direction = DcMotorSimple.Direction.FORWARD;
     public  DcMotorSimple.Direction rightMotor0Direction = DcMotorSimple.Direction.FORWARD;
     public  DcMotorSimple.Direction rightMotor1Direction = DcMotorSimple.Direction.FORWARD;
+    public vector leftPodTurn = new vector(1, Math.toRadians(-90)),
+                  rightPodTurn = new vector(1, Math.toRadians(90));
+    public double leftPodX, leftPodY, rightPodX, rightPodY;
     public  double motorCachingThreshold = 0.01;
     public  boolean useBrakeModeInTeleOp = false;
     public  boolean useVoltageCompensation = false;
@@ -94,7 +95,41 @@ public class SwerveConstants {
         this.rightMotor1Direction = rightMotor1Direction;
         return this;
     }
+    //Angle for rotation is perpendicular to the vector to the wheel
 
+    /**
+     * Sets and normalizes the turn vector based on the offset of the wheel from center
+     * @param x unit doesn't matter so long as its consistent, but I'm declaring that you use inches
+     * @param y
+     * @return
+     */
+    public SwerveConstants setLeftPod(double x, double y){
+        leftPodX = x;
+        leftPodY = y;
+        leftPodTurn.setOrthogonalComponents(x,y);
+        leftPodTurn.rotateVector(90);
+        double scalingFactor = Math.max(leftPodTurn.getMagnitude(), rightPodTurn.getMagnitude());
+        leftPodTurn.setMagnitude(leftPodTurn.getMagnitude()/scalingFactor);
+        rightPodTurn.setMagnitude(rightPodTurn.getMagnitude()/scalingFactor);
+        return this;
+    }
+
+    /**
+     * Sets and normalizes the turn vector based on the offset of the wheel from center
+     * @param x unit doesn't matter so long as its consistent, but I'm declaring that you use inches
+     * @param y
+     * @return
+     */
+    public SwerveConstants setRightPod(double x, double y){
+        rightPodX = x;
+        rightPodY = y;
+        rightPodTurn.setOrthogonalComponents(x,y);
+        rightPodTurn.rotateVector(90);
+        double scalingFactor = Math.max(leftPodTurn.getMagnitude(), rightPodTurn.getMagnitude());
+        leftPodTurn.setMagnitude(leftPodTurn.getMagnitude()/scalingFactor);
+        rightPodTurn.setMagnitude(rightPodTurn.getMagnitude()/scalingFactor);
+        return this;
+    }
     public SwerveConstants motorCachingThreshold(double motorCachingThreshold) {
         this.motorCachingThreshold = motorCachingThreshold;
         return this;
@@ -134,14 +169,6 @@ public class SwerveConstants {
 
     public void setYVelocity(double yVelocity) {
         this.yVelocity = yVelocity;
-    }
-
-    public Vector getFrontLeftVector() {
-        return frontLeftVector;
-    }
-
-    public void setFrontLeftVector(Vector frontLeftVector) {
-        this.frontLeftVector = frontLeftVector;
     }
 
     public double getMaxPower() {
@@ -239,8 +266,6 @@ public class SwerveConstants {
     public void defaults() {
         xVelocity = 81.34056;
         yVelocity = 65.43028;
-        convertToPolar = Pose.cartesianToPolar(xVelocity, -yVelocity);
-        frontLeftVector = new Vector(convertToPolar[0], convertToPolar[1]).normalize();
         maxPower = 1;
         leftMotor0 = "left0";
         leftMotor1 = "left1";
