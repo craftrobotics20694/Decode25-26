@@ -112,25 +112,25 @@ public class AprilTag extends LinearOpMode {
                 telemetry.addLine(String.format("%5.3f%3d(%3d,%3d)",b.getCircularity(),(int) circleFit.getRadius(),(int) circleFit.getX(), (int) circleFit.getY()));
             List<AprilTagDetection> currentDetections = aprilTag.getDetections();
             telemetry.update();
-        telemetry.addData("# AprilTags Detected", currentDetections.size());
-        for (AprilTagDetection detection : currentDetections) {
-            if (detection.metadata != null) {
-                telemetry.addLine(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name));
-                if (!detection.metadata.name.contains("Obelisk")) {
-                    telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f  (inch)",
-                            detection.robotPose.getPosition().x,
-                            detection.robotPose.getPosition().y,
-                            detection.robotPose.getPosition().z));
-                    telemetry.addLine(String.format("PRY %6.1f %6.1f %6.1f  (deg)",
-                            detection.robotPose.getOrientation().getPitch(AngleUnit.DEGREES),
-                            detection.robotPose.getOrientation().getRoll(AngleUnit.DEGREES),
-                            detection.robotPose.getOrientation().getYaw(AngleUnit.DEGREES)));
+            telemetry.addData("# AprilTags Detected", currentDetections.size());
+            for (AprilTagDetection detection : currentDetections) {
+                if (detection.metadata != null) {
+                    telemetry.addLine(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name));
+                    if (!detection.metadata.name.contains("Obelisk")) {
+                        telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f  (inch)",
+                                detection.robotPose.getPosition().x,
+                                detection.robotPose.getPosition().y,
+                                detection.robotPose.getPosition().z));
+                        telemetry.addLine(String.format("PRY %6.1f %6.1f %6.1f  (deg)",
+                                detection.robotPose.getOrientation().getPitch(AngleUnit.DEGREES),
+                                detection.robotPose.getOrientation().getRoll(AngleUnit.DEGREES),
+                                detection.robotPose.getOrientation().getYaw(AngleUnit.DEGREES)));
+                    }
+                } else {
+                    telemetry.addLine(String.format("\n==== (ID %d) Unknown", detection.id));
+                    telemetry.addLine(String.format("Center %6.0f %6.0f   (pixels)", detection.center.x, detection.center.y));
                 }
-            } else {
-                telemetry.addLine(String.format("\n==== (ID %d) Unknown", detection.id));
-                telemetry.addLine(String.format("Center %6.0f %6.0f   (pixels)", detection.center.x, detection.center.y));
             }
-        }
-        telemetry.addLine("\nkey:\nXYZ = X (Right), Y (Forward), Z (Up) dist.");
-        telemetry.addLine("PRY = Pitch, Roll & Yaw (XYZ Rotation)");
+            telemetry.addLine("\nkey:\nXYZ = X (Right), Y (Forward), Z (Up) dist.");
+            telemetry.addLine("PRY = Pitch, Roll & Yaw (XYZ Rotation)");
     }}}
