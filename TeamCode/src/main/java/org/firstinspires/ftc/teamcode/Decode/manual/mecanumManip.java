@@ -1,9 +1,11 @@
 package org.firstinspires.ftc.teamcode.Decode.manual;
 
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import org.firstinspires.ftc.teamcode.Decode.mecanumConstants;
 
+@TeleOp
 public class mecanumManip extends OpMode{
     DcMotorEx leftFront, leftBack, rightFront, rightBack;
 
