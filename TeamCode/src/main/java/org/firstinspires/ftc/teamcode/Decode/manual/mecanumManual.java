@@ -15,6 +15,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.Decode.mecanumConstants;
 
+
 import java.util.function.Supplier;
 
 @Configurable
@@ -48,6 +49,7 @@ public class mecanumManual extends OpMode {
         //In order to use float mode, add .useBrakeModeInTeleOp(true); to your Drivetrain Constants in Constant.java (for Mecanum)
         //If you don't pass anything in, it uses the default (false)
         follower.startTeleopDrive();
+        panels.enable();
     }
 
     @Override
@@ -56,35 +58,16 @@ public class mecanumManual extends OpMode {
         follower.update();
         targetVector.setOrthogonalComponents(gamepad1.left_stick_x,-gamepad1.left_stick_y);
 
-        if (!automatedDrive){
-            if(fieldCentric) {
-                targetVector.rotateVector(-(follower.getHeading()-startingHeading));
-                follower.setTeleOpDrive(
-                        targetVector.getYComponent(),
-                        -targetVector.getXComponent(),
-                        -gamepad1.right_stick_x,
-                        false
-                );
-            }
-            else
-                follower.setTeleOpDrive(
-                        targetVector.getYComponent(),
-                        targetVector.getXComponent(),
-                        -gamepad1.right_stick_x,
-                        false
-                );
-        }
+        if(fieldCentric) targetVector.rotateVector(-(follower.getHeading() - startingHeading));
 
+        follower.setTeleOpDrive(
+                targetVector.getYComponent(),
+                targetVector.getXComponent(),
+                gamepad1.right_stick_x,
+                true
+        );
 
-        //Stop automated following if the follower is done
-        if (gamepad1.aWasPressed()) {
-            startingHeading = follower.getHeading();
-        }
-
-        //Robot Centric
-        if (gamepad1.rightBumperWasPressed()) {
-            fieldCentric = !fieldCentric;
-        }
+        if(gamepad1.aWasPressed()) fieldCentric = !fieldCentric;
 
         telemetry.addData("Heading", follower.getPose().getHeading());
         telemetry.addData("X", follower.getPose().getX());
