@@ -23,7 +23,7 @@ import org.firstinspires.ftc.vision.opencv.ImageRegion;
 import java.util.List;
 
 @TeleOp(name = "AprilTag", group = "Concept")
-public class AprilTag extends LinearOpMode {
+public class AprilTag1 extends LinearOpMode {
     ColorBlobLocatorProcessor colorLocator1, colorLocator2;
     private static final boolean USE_WEBCAM = true;  // true for webcam, false for phone camera
 
@@ -100,31 +100,37 @@ public class AprilTag extends LinearOpMode {
     }
     @SuppressLint("DefaultLocale")
     private void telemetryAprilTag() {
-        List<AprilTagDetection> currentDetections = aprilTag.getDetections();
-        telemetry.addData("# AprilTags Detected", currentDetections.size());
-
-        // Step through the list of detections and display info for each one.
-        for (AprilTagDetection detection : currentDetections) {
-            if (detection.metadata != null) {
-                telemetry.addLine(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name));
-                // Only use tags that don't have Obelisk in them
-                if (!detection.metadata.name.contains("Obelisk")) {
-                    telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f  (inch)",
-                            detection.robotPose.getPosition().x,
-                            detection.robotPose.getPosition().y,
-                            detection.robotPose.getPosition().z));
-                    telemetry.addLine(String.format("PRY %6.1f %6.1f %6.1f  (deg)",
-                            detection.robotPose.getOrientation().getPitch(AngleUnit.DEGREES),
-                            detection.robotPose.getOrientation().getRoll(AngleUnit.DEGREES),
-                            detection.robotPose.getOrientation().getYaw(AngleUnit.DEGREES)));
+            List<ColorBlobLocatorProcessor.Blob> blobs = colorLocator1.getBlobs();
+            ColorBlobLocatorProcessor.Util.filterByCriteria(
+                    ColorBlobLocatorProcessor.BlobCriteria.BY_CONTOUR_AREA,
+                    150, 20000, blobs);
+            ColorBlobLocatorProcessor.Util.filterByCriteria(
+                    ColorBlobLocatorProcessor.BlobCriteria.BY_CIRCULARITY,
+                    0.6, 1, blobs);        telemetry.addLine("Circularity Radius Center");
+            for (ColorBlobLocatorProcessor.Blob b : blobs) {
+                Circle circleFit = b.getCircle();
+                telemetry.addLine(String.format("%5.3f%3d(%3d,%3d)",b.getCircularity(),(int) circleFit.getRadius(),(int) circleFit.getX(), (int) circleFit.getY()));
+            List<AprilTagDetection> currentDetections = aprilTag.getDetections();
+            telemetry.update();
+            telemetry.addData("# AprilTags Detected", currentDetections.size());
+            for (AprilTagDetection detection : currentDetections) {
+                if (detection.metadata != null) {
+                    telemetry.addLine(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name));
+                    if (!detection.metadata.name.contains("Obelisk")) {
+                        telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f  (inch)",
+                                detection.robotPose.getPosition().x,
+                                detection.robotPose.getPosition().y,
+                                detection.robotPose.getPosition().z));
+                        telemetry.addLine(String.format("PRY %6.1f %6.1f %6.1f  (deg)",
+                                detection.robotPose.getOrientation().getPitch(AngleUnit.DEGREES),
+                                detection.robotPose.getOrientation().getRoll(AngleUnit.DEGREES),
+                                detection.robotPose.getOrientation().getYaw(AngleUnit.DEGREES)));
+                    }
+                } else {
+                    telemetry.addLine(String.format("\n==== (ID %d) Unknown", detection.id));
+                    telemetry.addLine(String.format("Center %6.0f %6.0f   (pixels)", detection.center.x, detection.center.y));
                 }
-            } else {
-                telemetry.addLine(String.format("\n==== (ID %d) Unknown", detection.id));
-                telemetry.addLine(String.format("Center %6.0f %6.0f   (pixels)", detection.center.x, detection.center.y));
             }
-        }   // end for() loop
-
-        // Add "key" information to telemetry
-        telemetry.addLine("\nkey:\nXYZ = X (Right), Y (Forward), Z (Up) dist.");
-        telemetry.addLine("PRY = Pitch, Roll & Yaw (XYZ Rotation)");
-    }}
+            telemetry.addLine("\nkey:\nXYZ = X (Right), Y (Forward), Z (Up) dist.");
+            telemetry.addLine("PRY = Pitch, Roll & Yaw (XYZ Rotation)");
+    }}}
