@@ -62,8 +62,8 @@ public class mecanumConstants {
             .IMU_HardwareMapName("imu")
             .IMU_Orientation(
                     new RevHubOrientationOnRobot(
-                            RevHubOrientationOnRobot.LogoFacingDirection.FORWARD,
-                            RevHubOrientationOnRobot.UsbFacingDirection.DOWN
+                            RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
+                            RevHubOrientationOnRobot.UsbFacingDirection.UP
                     )
             )
             .forwardTicksToInches(0.003)

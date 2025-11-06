@@ -13,6 +13,8 @@ import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.teamcode.Decode.mecanumConstants;
 
 
@@ -30,6 +32,8 @@ public class mecanumManual extends OpMode {
     private boolean fieldCentric = false;
     private vector targetVector;
     private Panels panels = Panels.INSTANCE;
+    private CRServo leftBelt, rightBelt;
+    private Servo leftLauncher, rightLauncher;
 
     @Override
     public void init() {
@@ -41,6 +45,11 @@ public class mecanumManual extends OpMode {
                 .addPath(new Path(new BezierLine(follower::getPose, new Pose(45, 98))))
                 .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(45), 0.8))
                 .build();
+
+        leftBelt = hardwareMap.get(CRServo.class, "leftBelt");
+        rightBelt = hardwareMap.get(CRServo.class, "rightBelt");
+        leftLauncher = hardwareMap.get(Servo.class, "leftLauncher");
+        rightLauncher = hardwareMap.get(Servo.class, "rightLauncher");
     }
 
     @Override
@@ -67,7 +76,15 @@ public class mecanumManual extends OpMode {
                 true
         );
 
-        if(gamepad1.aWasPressed()) fieldCentric = !fieldCentric;
+        leftBelt.setPower(-gamepad2.left_stick_y);
+        rightBelt.setPower(gamepad2.left_stick_y);
+        
+        if(gamepad2.b){
+            leftLauncher.setPosition(-gamepad2.right_stick_y);
+            rightLauncher.setPosition(gamepad2.right_stick_y);
+        }
+
+        if(gamepad1.bWasPressed()) fieldCentric = !fieldCentric;
 
         telemetry.addData("Heading", follower.getPose().getHeading());
         telemetry.addData("X", follower.getPose().getX());
