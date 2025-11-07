@@ -15,7 +15,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 public class mecanumConstants {
     public static FollowerConstants followerConstants = new FollowerConstants()
-            .mass(10.0);
+            .mass(5.0);
 
     public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1, 1);
 
@@ -25,7 +25,7 @@ public class mecanumConstants {
             .rightFrontMotorName("rightFront")
             .leftRearMotorName("leftBack")
             .rightRearMotorName("rightBack")
-            .leftFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
+            .leftFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
             .rightFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
             .leftRearMotorDirection(DcMotorSimple.Direction.FORWARD)
             .rightRearMotorDirection(DcMotorSimple.Direction.REVERSE)
@@ -54,10 +54,10 @@ public class mecanumConstants {
             .leftPodY(7.5625)
             .leftEncoderDirection(Encoder.REVERSE)
             .rightEncoder_HardwareMapName("rightFront")
-            .rightPodY(7.5625)
+            .rightPodY(-7.5625)
             .rightEncoderDirection(Encoder.REVERSE)
-            .strafeEncoder_HardwareMapName("rightBack")
-            .strafePodX(7.1875)
+            .strafeEncoder_HardwareMapName("leftBack")
+            .strafePodX(-7.1875)
             .strafeEncoderDirection(Encoder.REVERSE)
             .IMU_HardwareMapName("imu")
             .IMU_Orientation(

@@ -14,7 +14,9 @@ import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorImplEx;
+
 import org.firstinspires.ftc.teamcode.Decode.mecanumConstants;
 
 
@@ -30,13 +32,15 @@ public class mecanumManual extends OpMode {
     private Supplier<PathChain> pathChain;
     private TelemetryManager telemetryM;
     private boolean fieldCentric = false;
-    private vector targetVector;
-    private Panels panels = Panels.INSTANCE;
-    private CRServo leftBelt, rightBelt;
-    private Servo leftLauncher, rightLauncher;
+    private vector targetVector = new vector();
+    private CRServo belt;
+    private DcMotorEx launcher;
 
     @Override
     public void init() {
+        belt = hardwareMap.get(CRServo.class, "belt");
+        launcher = hardwareMap.get(DcMotorEx.class, "launcher");
+
         follower = mecanumConstants.createFollower(hardwareMap);
         follower.setStartingPose(startingPose == null ? new Pose() : startingPose);
         follower.update();
@@ -45,11 +49,6 @@ public class mecanumManual extends OpMode {
                 .addPath(new Path(new BezierLine(follower::getPose, new Pose(45, 98))))
                 .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(45), 0.8))
                 .build();
-
-        leftBelt = hardwareMap.get(CRServo.class, "leftBelt");
-        rightBelt = hardwareMap.get(CRServo.class, "rightBelt");
-        leftLauncher = hardwareMap.get(Servo.class, "leftLauncher");
-        rightLauncher = hardwareMap.get(Servo.class, "rightLauncher");
     }
 
     @Override
@@ -57,8 +56,7 @@ public class mecanumManual extends OpMode {
         //The parameter controls whether the Follower should use break mode on the motors (using it is recommended).
         //In order to use float mode, add .useBrakeModeInTeleOp(true); to your Drivetrain Constants in Constant.java (for Mecanum)
         //If you don't pass anything in, it uses the default (false)
-        follower.startTeleopDrive();
-        panels.enable();
+        follower.startTeleopDrive(true);
     }
 
     @Override
@@ -71,17 +69,18 @@ public class mecanumManual extends OpMode {
 
         follower.setTeleOpDrive(
                 targetVector.getYComponent(),
-                targetVector.getXComponent(),
-                gamepad1.right_stick_x,
+                -targetVector.getXComponent(),
+                -gamepad1.right_stick_x,
                 true
         );
 
-        leftBelt.setPower(-gamepad2.left_stick_y);
-        rightBelt.setPower(gamepad2.left_stick_y);
+        belt.setPower(-gamepad2.left_stick_y);
         
         if(gamepad2.b){
-            leftLauncher.setPosition(-gamepad2.right_stick_y);
-            rightLauncher.setPosition(gamepad2.right_stick_y);
+            launcher.setPower(-gamepad2.right_stick_y);
+        }
+        else{
+            launcher.setPower(0);
         }
 
         if(gamepad1.bWasPressed()) fieldCentric = !fieldCentric;
