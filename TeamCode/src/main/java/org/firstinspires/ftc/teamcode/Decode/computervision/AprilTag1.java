@@ -22,7 +22,7 @@ import org.firstinspires.ftc.vision.opencv.ImageRegion;
 
 import java.util.List;
 
-@TeleOp(name = "AprilTag", group = "Concept")
+@TeleOp(name = "AprilTag1", group = "Concept")
 public class AprilTag1 extends LinearOpMode {
     ColorBlobLocatorProcessor colorLocator1, colorLocator2;
     private static final boolean USE_WEBCAM = true;  // true for webcam, false for phone camera
