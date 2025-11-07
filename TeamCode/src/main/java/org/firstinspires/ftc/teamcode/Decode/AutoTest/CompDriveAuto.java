@@ -23,10 +23,10 @@ public class CompDriveAuto extends OpMode {
 
     @Override
     public void start(){
-        leftFront.setPower(1);
-        leftBack.setPower(1);
-        rightFront.setPower(1);
-        rightBack.setPower(1);
+        leftFront.setPower(.5);
+        leftBack.setPower(.5);
+        rightFront.setPower(.5);
+        rightBack.setPower(.5);
     }
 
     @Override
