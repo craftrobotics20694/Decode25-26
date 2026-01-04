@@ -121,17 +121,9 @@ public class Swerve extends Drivetrain {
 
         //This is mostly copy paste once for each Vector parameter, the order determines what is prioritized
 
-        //Makes our version of a vector out of correctivePower
-        vector newCorrectivePower = new vector(correctivePower);
         //NormalizingScaling is the factor applied to the variable vector such when it is summed with the static vector the resultant vector's magnitude is 1
         //We do this so that no vector exceeds a magnitude of 1
         //We multiply both tacked-on vectors by same factor so that movement is proportional and things don't break
-        scalingFactor = Math.min(Math.min(
-                        findNormalizingScaling(leftVector,  newCorrectivePower, maxPowerScaling),
-                        findNormalizingScaling(rightVector, newCorrectivePower, maxPowerScaling)),
-                        1);
-        leftVector  = leftVector .plus(leftTurn .times(scalingFactor));
-        rightVector = rightVector.plus(rightTurn.times(scalingFactor));
 
         //Adds turning power (headingPower)
         scalingFactor = Math.min(Math.min(

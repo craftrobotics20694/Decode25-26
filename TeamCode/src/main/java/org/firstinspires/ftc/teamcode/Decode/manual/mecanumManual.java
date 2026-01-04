@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.Decode.manual;
 
 import com.bylazar.configurables.annotations.Configurable;
-import com.bylazar.panels.Panels;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
@@ -15,7 +14,8 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorImplEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import org.firstinspires.ftc.teamcode.Decode.carousel;
 
 import org.firstinspires.ftc.teamcode.Decode.mecanumConstants;
 
@@ -33,14 +33,16 @@ public class mecanumManual extends OpMode {
     private TelemetryManager telemetryM;
     private boolean fieldCentric = false;
     private vector targetVector = new vector();
-    private CRServo belt;
-    private DcMotorEx launcher;
+    private CRServo lift;
+    private DcMotorEx carousel;
+    private DcMotorEx launcher, intake;
 
-    @Override
     public void init() {
-        belt = hardwareMap.get(CRServo.class, "belt");
+        carousel = hardwareMap.get(DcMotorEx.class, "carousel");
+        lift = hardwareMap.get(CRServo.class, "lift");
+        intake = hardwareMap.get(DcMotorEx.class, "intake");
         launcher = hardwareMap.get(DcMotorEx.class, "launcher");
-
+        launcher.setDirection(DcMotorSimple.Direction.REVERSE);
         follower = mecanumConstants.createFollower(hardwareMap);
         follower.setStartingPose(startingPose == null ? new Pose() : startingPose);
         follower.update();
@@ -51,7 +53,6 @@ public class mecanumManual extends OpMode {
                 .build();
     }
 
-    @Override
     public void start() {
         //The parameter controls whether the Follower should use break mode on the motors (using it is recommended).
         //In order to use float mode, add .useBrakeModeInTeleOp(true); to your Drivetrain Constants in Constant.java (for Mecanum)
@@ -59,9 +60,9 @@ public class mecanumManual extends OpMode {
         follower.startTeleopDrive(true);
     }
 
-    @Override
     public void loop() {
         //Call this once per loop
+        //carousel.approachPosition();
         follower.update();
         targetVector.setOrthogonalComponents(gamepad1.left_stick_x,-gamepad1.left_stick_y);
 
@@ -69,29 +70,26 @@ public class mecanumManual extends OpMode {
 
         follower.setTeleOpDrive(
                 targetVector.getYComponent(),
-                -targetVector.getXComponent(),
-                -gamepad1.right_stick_x,
+                targetVector.getXComponent(),
+                gamepad1.right_stick_x,
                 true
         );
 
-        belt.setPower(-gamepad2.left_stick_y);
-        
-        if(gamepad2.b){
-            launcher.setPower(-gamepad2.right_stick_y);
-        }
-        else{
-            launcher.setPower(0);
-        }
+        intake.setPower(gamepad1.right_trigger);
+
+        carousel.setPower(-gamepad2.right_stick_x);
+
+        lift.setPower(gamepad2.left_stick_y);
+
+        launcher.setPower(-gamepad2.right_stick_y);
 
         if(gamepad1.bWasPressed()) fieldCentric = !fieldCentric;
 
         telemetry.addData("Heading", follower.getPose().getHeading());
         telemetry.addData("X", follower.getPose().getX());
         telemetry.addData("Y", follower.getPose().getY());
-        telemetry.addData("Target Theta", targetVector.getTheta());
-        telemetry.addData("Target Magnitude", targetVector.getMagnitude());
-        telemetry.addData("leftStickX", gamepad1.left_stick_x);
-        telemetry.addData("leftStickY", gamepad1.left_stick_y);
         telemetry.addData("Field Centric", fieldCentric);
+//        telemetry.addData("carouselPos", carousel.position);
+//        telemetry.addData("carouselDistance", carousel.distanceToPos(carousel.position));
     }
 }

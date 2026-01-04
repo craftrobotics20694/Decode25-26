@@ -14,7 +14,6 @@ public class swervePod {
     private double radiansPerTick = 1692;
 
     //Tangent to robot center in direction of positive radian turning
-    public vector turnVector = new vector(1, Math.toRadians(90));
     public double startingHeading = Math.toRadians(90);
     public double driveDecay = 25;
 
