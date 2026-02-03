@@ -7,8 +7,8 @@ public class carousel {
     private DcMotor motor;
     public double position;
     private final double ticksPerPos = 250;
-    private final double tolerance = 0.05;
-    private final double decay = 25;
+    private final double liftTolerance = 0.05;
+    private final double decay = 0.001;
     private Servo lift;
     private final double liftUp = 0.5;
     private final double liftDown = 0;
@@ -45,19 +45,21 @@ public class carousel {
 
 
     public void approachPosition(double position) {
-        motor.setPower(-(1 - (1 / ((distanceToPos(position) * decay) + 1))));
+        motor.setPower((Math.signum(distanceToPos(position) * (1 - (1 / ((Math.abs(distanceToPos(position)) * decay) + 1))))));
     }
 
     public void approachPosition() {
         approachPosition(position);
     }
 
-    public void liftUp() {
+    public boolean liftUp() {
         lift.setPosition(liftUp);
+        return(Math.abs(liftUp - lift.getPosition()) < liftTolerance);
     }
 
-    public void liftDown() {
+    public boolean liftDown() {
         lift.setPosition(liftDown);
+        return(Math.abs(liftDown - lift.getPosition()) < liftTolerance);
     }
 
     public void incrementPosition(double increment) {

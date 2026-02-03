@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.Decode.drivetrains.swervePod;
 import org.firstinspires.ftc.teamcode.Decode.MathUtils.vector;
 
 @TeleOp
-public class swerveManipulation extends OpMode{
+public class swerveManip extends OpMode{
     private Swerve drivetrain;
     private Follower follower;
     private final double startingHeading = Math.toRadians(90);
