@@ -3,32 +3,36 @@ package org.firstinspires.ftc.teamcode.Decode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-public class carousel {
+public class Carousel {
     private DcMotor motor;
     public double position;
+    private boolean liftPosition = false;
     private final double ticksPerPos = 250;
+    //tolerance in servo positions (ergo trial and error)
     private final double liftTolerance = 0.05;
+    //tolerance in ticks
+    private final int carouselTolerance = 100;
     private final double decay = 0.001;
     private Servo lift;
     private final double liftUp = 0.5;
     private final double liftDown = 0;
 
-    public carousel assignMotor(DcMotor motor) {
+    public Carousel assignMotor(DcMotor motor) {
         this.motor = motor;
         return this;
     }
 
-    public carousel assignMotor(HardwareMap hardwareMap, String name) {
+    public Carousel assignMotor(HardwareMap hardwareMap, String name) {
         motor = hardwareMap.get(DcMotor.class, name);
         return this;
     }
 
-    public carousel assignLift(Servo servo) {
+    public Carousel assignLift(Servo servo) {
         lift = servo;
         return this;
     }
 
-    public carousel assignLift(HardwareMap hardwareMap, String name) {
+    public Carousel assignLift(HardwareMap hardwareMap, String name) {
         lift = hardwareMap.get(Servo.class, name);
         return this;
     }
@@ -44,22 +48,29 @@ public class carousel {
     }
 
 
-    public void approachPosition(double position) {
-        motor.setPower((Math.signum(distanceToPos(position) * (1 - (1 / ((Math.abs(distanceToPos(position)) * decay) + 1))))));
+    public boolean approachPosition(double position) {
+        motor.setPower((Math.signum(distanceToPos(position) * (1 - (1 / ((Math.abs(distanceToPos(position)) * decay) + 1)))))/3);
+        return(Math.abs(distanceToPos(position)) < carouselTolerance);
     }
 
-    public void approachPosition() {
-        approachPosition(position);
+    public boolean approachPosition() {
+        return(approachPosition(position));
     }
 
     public boolean liftUp() {
         lift.setPosition(liftUp);
+        liftPosition = true;
         return(Math.abs(liftUp - lift.getPosition()) < liftTolerance);
     }
 
     public boolean liftDown() {
         lift.setPosition(liftDown);
+        liftPosition = false;
         return(Math.abs(liftDown - lift.getPosition()) < liftTolerance);
+    }
+
+    public boolean getLiftPosition(){
+        return(liftPosition);
     }
 
     public void incrementPosition(double increment) {
@@ -68,5 +79,9 @@ public class carousel {
 
     public void setPosition(double position) {
         this.position = position;
+    }
+    public double getPosition()
+    {
+        return(position);
     }
 }
