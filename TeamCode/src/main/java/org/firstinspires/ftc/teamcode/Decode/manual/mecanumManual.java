@@ -7,6 +7,7 @@ import com.pedropathing.geometry.Pose;
 import org.firstinspires.ftc.teamcode.Decode.MathUtils.vector;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import org.firstinspires.ftc.teamcode.Decode.Carousel;
@@ -22,8 +23,11 @@ public class mecanumManual extends OpMode {
     private boolean fieldCentric = false;
     private vector targetVector = new vector();
     private Servo lift;
-    private boolean canMoveCarousel = false;
-    private boolean carouselMoving = false;
+    private final double liftTimeToPosition = 1;
+    private double startTime;
+    private boolean canMoveCarousel = false,
+                    carouselMoving = false,
+                    inHalfPosition = false;
     private Carousel carousel = new Carousel();
     private DcMotor carouselMotor, launcher, intake;
 
@@ -35,6 +39,7 @@ public class mecanumManual extends OpMode {
         carousel.assignLift(lift);
         
         intake = hardwareMap.get(DcMotor.class, "intake");
+        intake.setDirection(DcMotorSimple.Direction.REVERSE);
         launcher = hardwareMap.get(DcMotor.class, "launcher");
         launcher.setDirection(DcMotor.Direction.REVERSE);
 
@@ -57,13 +62,11 @@ public class mecanumManual extends OpMode {
         //Blue controller===================================================
         targetVector.setOrthogonalComponents(gamepad1.left_stick_x,-gamepad1.left_stick_y);
 
-        if(fieldCentric) targetVector.rotateVector(-(follower.getHeading() - startingHeading));
-
         follower.setTeleOpDrive(
                 targetVector.getYComponent(),
-                targetVector.getXComponent(),
+                -targetVector.getXComponent(),
                 gamepad1.right_stick_x,
-                false
+                true
         );
 
         intake.setPower(gamepad1.right_trigger);
@@ -72,10 +75,12 @@ public class mecanumManual extends OpMode {
 
         if(gamepad1.leftBumperWasPressed()){
             carousel.incrementPosition(-1 + mod(carousel.getPosition(), 1));
+            inHalfPosition = false;
         }
 
         if(gamepad1.rightBumperWasPressed()){
             carousel.incrementPosition(1 - mod(carousel.getPosition(), 1));
+            inHalfPosition = false;
         }
 
         //Red controller====================================================
@@ -84,33 +89,41 @@ public class mecanumManual extends OpMode {
 
         if(gamepad2.leftBumperWasPressed()){
             carousel.incrementPosition(-0.5 - mod(carousel.getPosition(), 1));
+            inHalfPosition = true;
         }
 
         if(gamepad2.rightBumperWasPressed()){
             carousel.incrementPosition(0.5 + mod(carousel.getPosition(), 1));
+            inHalfPosition = true;
         }
 
         //Carousel shenanigans==============================================
+
         //Circle pressed and carousel not moving
-        if(gamepad2.circle && !carouselMoving){
+        if(gamepad2.circle && (!carouselMoving) && inHalfPosition){
             carousel.liftUp();
             canMoveCarousel = false;
         }
         //Circle not pressed (doesn't matter if carousel is moving or not)
         else{
-            canMoveCarousel = carousel.liftDown();
+            if(gamepad2.circleWasReleased()){
+                startTime = time;
+            }
+            canMoveCarousel = time > (startTime + liftTimeToPosition);
+            carousel.liftDown();
         }
 
         //Try carousel movement
-        if(canMoveCarousel){
+        if(canMoveCarousel) {
             //Unwinding of carousel
-            if(Math.abs(carousel.getPosition())>=5){
+            if (Math.abs(carousel.getPosition()) >= 6) {
                 carousel.setPosition(carousel.getPosition() % 3);
             }
 
             //Moves and checks movement of carousel
             carouselMoving = !carousel.approachPosition();
         }
+        else carouselMotor.setPower(0);
 
         //Telemetry
         telemetry.addData("Heading", follower.getPose().getHeading());

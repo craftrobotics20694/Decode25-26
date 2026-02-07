@@ -12,11 +12,14 @@ import org.firstinspires.ftc.teamcode.Decode.Carousel;
 @Configurable
 @TeleOp
 public class carouselManip extends OpMode{
+    private double startTime;
+    private final double liftTimeToPosition = 1;
     private DcMotor carouselMotor;
     private Servo lift;
-    private Carousel carousel;
+    private Carousel carousel = new Carousel();
     private boolean canMoveCarousel = false,
-            carouselMoving = false;
+                    carouselMoving = false,
+                    inHalfPosition = false;
     private int mode = 0;
     @Override
     public void init(){
@@ -35,7 +38,10 @@ public class carouselManip extends OpMode{
 
             case 1:
                 if(gamepad1.circle){
-                    carousel.approachPosition();
+                    telemetry.addData("inTolerance?", carousel.approachPosition());
+                }
+                else{
+                    carouselMotor.setPower(0);
                 }
 
                 if(gamepad1.leftBumperWasPressed()){
@@ -48,47 +54,65 @@ public class carouselManip extends OpMode{
                 break;
 
             case 2:
-                if(gamepad1.circle){
-                    carousel.approachPosition();
-                }
 
                 if(gamepad1.leftBumperWasPressed()){
-                    carousel.incrementPosition(-1);
+                    carousel.incrementPosition(-1 + mod(carousel.getPosition(), 1));
+                    inHalfPosition = false;
                 }
 
                 if(gamepad1.rightBumperWasPressed()){
-                    carousel.incrementPosition(1);
+                    carousel.incrementPosition(1 - mod(carousel.getPosition(), 1));
+                    inHalfPosition = false;
+                }
+
+                if(gamepad2.leftBumperWasPressed()){
+                    carousel.incrementPosition(-0.5 - mod(carousel.getPosition(), 1));
+                    inHalfPosition = true;
+                }
+
+                if(gamepad2.rightBumperWasPressed()){
+                    carousel.incrementPosition(0.5 + mod(carousel.getPosition(), 1));
+                    inHalfPosition = true;
                 }
 
                 //Circle pressed and carousel not moving
-                if(gamepad2.circle && !carouselMoving){
+                if(gamepad2.circle && (!carouselMoving) && inHalfPosition){
                     carousel.liftUp();
                     canMoveCarousel = false;
                 }
                 //Circle not pressed (doesn't matter if carousel is moving or not)
                 else{
-                    canMoveCarousel = carousel.liftDown();
+                    if(gamepad2.circleWasReleased()){
+                        startTime = time;
+                    }
+                    canMoveCarousel = time > (startTime + liftTimeToPosition);
+                    carousel.liftDown();
                 }
 
                 //Try carousel movement
                 if(canMoveCarousel) {
                     //Unwinding of carousel
-                    if (Math.abs(carousel.getPosition()) >= 5) {
+                    if (Math.abs(carousel.getPosition()) >= 6) {
                         carousel.setPosition(carousel.getPosition() % 3);
                     }
 
                     //Moves and checks movement of carousel
                     carouselMoving = !carousel.approachPosition();
                 }
+                else carouselMotor.setPower(0);
                 break;
         }
 
-        if(gamepad1.xWasPressed()) mode = (mode + 1) % 3;
+        if(gamepad1.crossWasPressed()) mode = (mode + 1) % 3;
         if(gamepad1.squareWasPressed()) carousel.resetEncoding();
 
+        telemetry.addData("carouselPower", carouselMotor.getPower());
+        telemetry.addData("mode", mode);
+        telemetry.addData("distanceToPos", carousel.distanceToPos(carousel.getPosition()));
         telemetry.addData("carouselPos", carousel.getPosition());
         telemetry.addData("carouselTicks", carouselMotor.getCurrentPosition());
         telemetry.addData("canMoveCarousel?", canMoveCarousel);
         telemetry.addData("carouselMoving?", carouselMoving);
+        telemetry.addData("servoPosition", lift.getPosition());
     }
 }

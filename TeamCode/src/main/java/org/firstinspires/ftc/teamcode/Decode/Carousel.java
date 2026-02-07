@@ -1,29 +1,34 @@
 package org.firstinspires.ftc.teamcode.Decode;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 public class Carousel {
     private DcMotor motor;
     public double position;
+    public DcMotor.Direction motorDirection = DcMotor.Direction.REVERSE;
     private boolean liftPosition = false;
-    private final double ticksPerPos = 250;
+    private final double ticksPerPos = 928;
     //tolerance in servo positions (ergo trial and error)
     private final double liftTolerance = 0.05;
     //tolerance in ticks
-    private final int carouselTolerance = 100;
-    private final double decay = 0.001;
+    private final double carouselTolerance = 0.03;
+    private final double basePower = 0.05;
+    private final double decay = 3;
     private Servo lift;
-    private final double liftUp = 0.5;
-    private final double liftDown = 0;
+    private final double liftUp = 0.0;
+    private final double liftDown = 1.0;
 
     public Carousel assignMotor(DcMotor motor) {
         this.motor = motor;
+        this.motor.setDirection(motorDirection);
         return this;
     }
 
     public Carousel assignMotor(HardwareMap hardwareMap, String name) {
         motor = hardwareMap.get(DcMotor.class, name);
+        this.motor.setDirection(motorDirection);
         return this;
     }
 
@@ -49,24 +54,23 @@ public class Carousel {
 
 
     public boolean approachPosition(double position) {
-        motor.setPower((Math.signum(distanceToPos(position) * (1 - (1 / ((Math.abs(distanceToPos(position)) * decay) + 1)))))/3);
-        return(Math.abs(distanceToPos(position)) < carouselTolerance);
+        boolean inTolerance = (Math.abs(distanceToPos(position)) < carouselTolerance);
+        motor.setPower((Math.signum(distanceToPos(position)) * (basePower + (1 - (1 / ((Math.abs(distanceToPos(position)) * decay) + 1))))));
+        return(inTolerance);
     }
 
     public boolean approachPosition() {
         return(approachPosition(position));
     }
 
-    public boolean liftUp() {
+    public void liftUp() {
         lift.setPosition(liftUp);
         liftPosition = true;
-        return(Math.abs(liftUp - lift.getPosition()) < liftTolerance);
     }
 
-    public boolean liftDown() {
+    public void liftDown() {
         lift.setPosition(liftDown);
         liftPosition = false;
-        return(Math.abs(liftDown - lift.getPosition()) < liftTolerance);
     }
 
     public boolean getLiftPosition(){
