@@ -12,11 +12,15 @@ import org.firstinspires.ftc.teamcode.Decode.Carousel;
 @Configurable
 @TeleOp
 public class carouselManip extends OpMode{
-    private double startTime;
+    private double startTime,
+                   prevTime = -0.0001;
     private final double liftTimeToPosition = 1;
     private DcMotor carouselMotor;
     private Servo lift;
     private Carousel carousel = new Carousel();
+    private double Kp = 0.5,
+                   Ki = 0.05,
+                   Kd = -0.2;
     private boolean canMoveCarousel = false,
                     carouselMoving = false,
                     inHalfPosition = false;
@@ -31,6 +35,7 @@ public class carouselManip extends OpMode{
 
     @Override
     public void loop(){
+        double deltaTime = time - prevTime;
         switch(mode){
             case 0:
                 carouselMotor.setPower(gamepad1.right_stick_x);
@@ -38,7 +43,7 @@ public class carouselManip extends OpMode{
 
             case 1:
                 if(gamepad1.circle){
-                    telemetry.addData("inTolerance?", carousel.approachPosition());
+                    telemetry.addData("inTolerance?", carousel.approachPosition(deltaTime));
                 }
                 else{
                     carouselMotor.setPower(0);
@@ -51,6 +56,44 @@ public class carouselManip extends OpMode{
                 if(gamepad1.rightBumperWasPressed()){
                     carousel.incrementPosition(1 - mod(carousel.getPosition(), 1));
                 }
+
+                if (gamepad2.dpadUpWasPressed()){
+                    Kp += 0.05;
+                }
+                if(gamepad2.dpadDownWasPressed()){
+                    Kp -= 0.05;
+                }
+
+                if(gamepad2.dpadRightWasPressed()){
+                    Ki += 0.05;
+                }
+                if(gamepad2.dpadLeftWasPressed()){
+                    Ki -= 0.05;
+                }
+
+                if(gamepad2.triangleWasPressed()){
+                    carousel.PID.setIntegralLimit(carousel.PID.getIntegralLimit()+0.05);
+                }
+                if(gamepad2.crossWasPressed()){
+                    carousel.PID.setIntegralLimit(carousel.PID.getIntegralLimit()-0.05);
+                }
+
+                if(gamepad2.rightBumperWasPressed()){
+                    Kd += 0.05;
+                }
+                if(gamepad2.leftBumperWasPressed()){
+                    Kd -= 0.05;
+                }
+
+                telemetry.addData("Kp", Kp);
+                telemetry.addData("Ki", Ki);
+                telemetry.addData("Kd", Kd);
+                telemetry.addData("integralLimit", carousel.PID.getIntegralLimit());
+                telemetry.addData("deltaTime", deltaTime);
+                telemetry.addData("proportionalTerm", Kp * carousel.distanceToPos(carousel.getPosition()));
+                telemetry.addData("integralTerm", Ki * carousel.PID.getIntegral());
+                telemetry.addData("differentialTerm", Kd * carousel.PID.getDifferential()/(Math.min(0.002, deltaTime)));
+                carousel.PID.setConstants(Kp, Ki, Kd);
                 break;
 
             case 2:
@@ -97,13 +140,13 @@ public class carouselManip extends OpMode{
                     }
 
                     //Moves and checks movement of carousel
-                    carouselMoving = !carousel.approachPosition();
+                    carouselMoving = !carousel.approachPosition(deltaTime);
                 }
                 else carouselMotor.setPower(0);
                 break;
         }
 
-        if(gamepad1.crossWasPressed()) mode = (mode + 1) % 3;
+        if(gamepad1.crossWasPressed()) mode = (mode + 1) % 2;
         if(gamepad1.squareWasPressed()) carousel.resetEncoding();
 
         telemetry.addData("carouselPower", carouselMotor.getPower());
@@ -114,5 +157,7 @@ public class carouselManip extends OpMode{
         telemetry.addData("canMoveCarousel?", canMoveCarousel);
         telemetry.addData("carouselMoving?", carouselMoving);
         telemetry.addData("servoPosition", lift.getPosition());
+
+        prevTime = time;
     }
 }

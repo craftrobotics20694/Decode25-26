@@ -1,10 +1,12 @@
 package org.firstinspires.ftc.teamcode.Decode;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import org.firstinspires.ftc.teamcode.Decode.PIDController;
 public class Carousel {
+    public PIDController PID = new PIDController(0.5,0.05, -0.2);
+    private final double PIDIntegralLimit = 0.5;
     private DcMotor motor;
     public double position;
     public DcMotor.Direction motorDirection = DcMotor.Direction.REVERSE;
@@ -15,7 +17,6 @@ public class Carousel {
     //tolerance in ticks
     private final double carouselTolerance = 0.03;
     private final double basePower = 0.05;
-    private final double decay = 3;
     private Servo lift;
     private final double liftUp = 0.0;
     private final double liftDown = 1.0;
@@ -53,14 +54,17 @@ public class Carousel {
     }
 
 
-    public boolean approachPosition(double position) {
+    public boolean approachPosition(double deltaTime, double position) {
+
         boolean inTolerance = (Math.abs(distanceToPos(position)) < carouselTolerance);
-        motor.setPower((Math.signum(distanceToPos(position)) * (basePower + (1 - (1 / ((Math.abs(distanceToPos(position)) * decay) + 1))))));
+        PID.update(distanceToPos(position), deltaTime);
+
+        motor.setPower(Math.max(-1, Math.min(PID.getCorrection(), 1))/3 + (basePower * Math.signum(PID.getCorrection())));
         return(inTolerance);
     }
 
-    public boolean approachPosition() {
-        return(approachPosition(position));
+    public boolean approachPosition(double deltaTime) {
+        return(approachPosition(deltaTime, position));
     }
 
     public void liftUp() {
@@ -87,5 +91,18 @@ public class Carousel {
     public double getPosition()
     {
         return(position);
+    }
+
+    public Carousel(){
+        PID.setIntegralLimit(PIDIntegralLimit);
+    }
+    public Carousel(DcMotor motor){
+        assignMotor(motor);
+        PID.setIntegralLimit(PIDIntegralLimit);
+    }
+
+    public Carousel(HardwareMap hardwareMap, String name){
+        assignMotor(hardwareMap, name);
+        PID.setIntegralLimit(PIDIntegralLimit);
     }
 }

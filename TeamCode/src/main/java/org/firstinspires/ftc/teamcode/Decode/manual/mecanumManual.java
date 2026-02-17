@@ -24,7 +24,8 @@ public class mecanumManual extends OpMode {
     private vector targetVector = new vector();
     private Servo lift;
     private final double liftTimeToPosition = 1;
-    private double startTime;
+    private double startTime,
+                   prevTime = -0.0001;
     private boolean canMoveCarousel = false,
                     carouselMoving = false,
                     inHalfPosition = false;
@@ -56,6 +57,7 @@ public class mecanumManual extends OpMode {
     }
 
     public void loop() {
+        double deltaTime = time - prevTime;
         //Call this once per loop
         follower.update();
 
@@ -121,7 +123,7 @@ public class mecanumManual extends OpMode {
             }
 
             //Moves and checks movement of carousel
-            carouselMoving = !carousel.approachPosition();
+            carouselMoving = !carousel.approachPosition(deltaTime);
         }
         else carouselMotor.setPower(0);
 
@@ -133,5 +135,7 @@ public class mecanumManual extends OpMode {
 
         telemetry.addData("carouselPos", carousel.position);
         telemetry.addData("carouselDistance", carousel.distanceToPos(carousel.position));
+
+        prevTime = time;
     }
 }
