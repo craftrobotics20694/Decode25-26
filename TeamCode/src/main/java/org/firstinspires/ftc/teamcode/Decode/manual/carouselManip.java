@@ -18,9 +18,9 @@ public class carouselManip extends OpMode{
     private DcMotor carouselMotor;
     private Servo lift;
     private Carousel carousel = new Carousel();
-    private double Kp = 0.5,
-                   Ki = 0.05,
-                   Kd = -0.2;
+    private double Kp = 4,
+                   Ki = 2,
+                   Kd = 0.05;
     private boolean canMoveCarousel = false,
                     carouselMoving = false,
                     inHalfPosition = false;
@@ -79,10 +79,10 @@ public class carouselManip extends OpMode{
                 }
 
                 if(gamepad2.rightBumperWasPressed()){
-                    Kd += 0.05;
+                    Kd += 0.005;
                 }
                 if(gamepad2.leftBumperWasPressed()){
-                    Kd -= 0.05;
+                    Kd -= 0.005;
                 }
 
                 telemetry.addData("Kp", Kp);
@@ -90,6 +90,7 @@ public class carouselManip extends OpMode{
                 telemetry.addData("Kd", Kd);
                 telemetry.addData("integralLimit", carousel.PID.getIntegralLimit());
                 telemetry.addData("deltaTime", deltaTime);
+                telemetry.addData("power", Math.max(-1, Math.min(carousel.PID.getCorrection(), 1))/3 + (0.05 * Math.signum(carousel.PID.getCorrection())));
                 telemetry.addData("proportionalTerm", Kp * carousel.distanceToPos(carousel.getPosition()));
                 telemetry.addData("integralTerm", Ki * carousel.PID.getIntegral());
                 telemetry.addData("differentialTerm", Kd * carousel.PID.getDifferential()/(Math.min(0.002, deltaTime)));

@@ -29,6 +29,9 @@ public class PIDController {
     public double getIntegral(){
         return integral;
     }
+    public void resetIntegral(){
+        integral = 0;
+    }
     public double getDifferential(){
         return differential;
     }

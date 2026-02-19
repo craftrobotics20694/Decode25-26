@@ -5,8 +5,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.teamcode.Decode.PIDController;
 public class Carousel {
-    public PIDController PID = new PIDController(0.5,0.05, -0.2);
-    private final double PIDIntegralLimit = 0.5;
+    public PIDController PID = new PIDController(4,2, 0.05);
+    private final double PIDIntegralLimit = 0.05;
     private DcMotor motor;
     public double position;
     public DcMotor.Direction motorDirection = DcMotor.Direction.REVERSE;
