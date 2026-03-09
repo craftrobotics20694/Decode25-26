@@ -20,7 +20,7 @@ public class PIDController {
         differential = error - prevError;
         correction = (Kp * error) +
                      (Ki * integral) +
-                     (Kd * (differential/Math.min(0.002, deltaTime)));
+                     (Kd * (differential/Math.max(0.002, deltaTime)));
         prevError = error;
     }
     public double getCorrection(){

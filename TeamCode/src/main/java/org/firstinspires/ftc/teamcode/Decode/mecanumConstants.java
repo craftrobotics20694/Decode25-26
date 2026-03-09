@@ -26,8 +26,8 @@ public class mecanumConstants {
             .leftRearMotorName("leftBack")
             .rightRearMotorName("rightBack")
             .leftFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
-            .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
-            .leftRearMotorDirection(DcMotorSimple.Direction.FORWARD)
+            .rightFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
+            .leftRearMotorDirection(DcMotorSimple.Direction.REVERSE)
             .rightRearMotorDirection(DcMotorSimple.Direction.REVERSE)
             .xVelocity(61.0)
             .yVelocity(42.29);
@@ -51,14 +51,14 @@ public class mecanumConstants {
 
     public static ThreeWheelIMUConstants threeWheelIMUConstants = new ThreeWheelIMUConstants()
             .leftEncoder_HardwareMapName("leftFront")
-            .leftPodY(7.5625)
             .leftEncoderDirection(Encoder.REVERSE)
+            .leftPodY(8)
             .rightEncoder_HardwareMapName("rightFront")
-            .rightPodY(-7.5625)
-            .rightEncoderDirection(Encoder.REVERSE)
+            .rightEncoderDirection(Encoder.FORWARD)
+            .rightPodY(-8)
             .strafeEncoder_HardwareMapName("leftBack")
-            .strafePodX(-7.1875)
             .strafeEncoderDirection(Encoder.REVERSE)
+            .strafePodX(-9.3)
             .IMU_HardwareMapName("imu")
             .IMU_Orientation(
                     new RevHubOrientationOnRobot(

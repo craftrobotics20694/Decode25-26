@@ -4,6 +4,8 @@ import static org.firstinspires.ftc.teamcode.Decode.MathUtils.mathFuncs.*;
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
+
+import org.firstinspires.ftc.teamcode.Decode.Launcher;
 import org.firstinspires.ftc.teamcode.Decode.MathUtils.vector;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -19,18 +21,21 @@ public class mecanumManual extends OpMode {
     private Follower follower;
     private static double startingHeading = Math.toRadians(90);
     public static Pose startingPose = new Pose(0,0, startingHeading); //See ExampleAuto to understand how to use this
-    private boolean automatedDrive = false;
     private boolean fieldCentric = false;
     private vector targetVector = new vector();
     private Servo lift;
-    private final double liftTimeToPosition = 1;
+    private double targetSpeed = 20;
+    private final double liftTimeToPosition = 0.8;
     private double startTime,
                    prevTime = -0.0001;
     private boolean canMoveCarousel = false,
+                    canShoot,
                     carouselMoving = false,
                     inHalfPosition = false;
     private Carousel carousel = new Carousel();
-    private DcMotor carouselMotor, launcher, intake;
+    private Launcher launcher;
+    private DcMotor carouselMotor,  intake, leftFront, leftBack, rightFront, rightBack;
+    private int debugVal = 0;
 
     public void init() {
         carouselMotor = hardwareMap.get(DcMotor.class, "carousel");
@@ -41,8 +46,19 @@ public class mecanumManual extends OpMode {
         
         intake = hardwareMap.get(DcMotor.class, "intake");
         intake.setDirection(DcMotorSimple.Direction.REVERSE);
-        launcher = hardwareMap.get(DcMotor.class, "launcher");
-        launcher.setDirection(DcMotor.Direction.REVERSE);
+
+        launcher = new Launcher(hardwareMap, "launcher");
+        launcher.speedLength = 10;
+        launcher.PID.setConstants(1.75,0.3,2.0);
+        launcher.PID.setIntegralLimit(0.4);
+
+        leftFront = hardwareMap.get(DcMotor.class, "leftFront");
+
+        leftBack = hardwareMap.get(DcMotor.class, "leftBack");
+
+        rightFront = hardwareMap.get(DcMotor.class, "rightFront");
+
+        rightBack = hardwareMap.get(DcMotor.class, "rightBack");
 
         follower = mecanumConstants.createFollower(hardwareMap);
         follower.setStartingPose(startingPose == null ? new Pose() : startingPose);
@@ -57,19 +73,27 @@ public class mecanumManual extends OpMode {
     }
 
     public void loop() {
+        //Call these once per loop
         double deltaTime = time - prevTime;
-        //Call this once per loop
         follower.update();
+        launcher.update(deltaTime);
 
         //Blue controller===================================================
         targetVector.setOrthogonalComponents(gamepad1.left_stick_x,-gamepad1.left_stick_y);
 
-        follower.setTeleOpDrive(
-                targetVector.getYComponent(),
-                -targetVector.getXComponent(),
-                gamepad1.right_stick_x,
-                true
-        );
+//        follower.setTeleOpDrive(
+//                targetVector.getYComponent(),
+//                targetVector.getXComponent(),
+//                gamepad1.right_stick_x,
+//                true
+//        );
+        double x = targetVector.getXComponent();
+        double y = targetVector.getYComponent();
+        double r = -gamepad1.right_stick_x;
+        leftFront.setPower(x - y + r);
+        leftBack.setPower(x + y + r);
+        rightFront.setPower(x + y - r);
+        rightBack.setPower(x - y + r);
 
         intake.setPower(gamepad1.right_trigger);
 
@@ -85,9 +109,11 @@ public class mecanumManual extends OpMode {
             inHalfPosition = false;
         }
 
-        //Red controller====================================================
+        if((gamepad1.square && gamepad1.dpadLeftWasPressed())||(gamepad1.squareWasPressed()&&gamepad1.dpad_left)){
+            carousel.setPosition(0);
+        }
 
-        launcher.setPower(gamepad2.right_stick_y);
+        //Red controller====================================================
 
         if(gamepad2.leftBumperWasPressed()){
             carousel.incrementPosition(-0.5 - mod(carousel.getPosition(), 1));
@@ -98,19 +124,42 @@ public class mecanumManual extends OpMode {
             carousel.incrementPosition(0.5 + mod(carousel.getPosition(), 1));
             inHalfPosition = true;
         }
+        if(gamepad2.squareWasPressed()){
+            debugVal = 0;
+        }
+
+        if(Math.abs(gamepad2.right_stick_y)<0.3) {
+            if(gamepad2.dpadLeftWasPressed()){targetSpeed -= 0.5;}
+            if(gamepad2.dpadRightWasPressed()){targetSpeed += 0.5;}
+            launcher.targetSpeed = targetSpeed;
+            if (gamepad2.circleWasPressed()) {
+                canShoot = false;
+                launcher.beginApproach();
+                debugVal = 1;
+                telemetry.addData("fuck", " shit");
+            } else if (gamepad2.circle) {
+                boolean tempBool = launcher.approachSpeed();
+                canShoot = canShoot || tempBool;
+            } else {
+                launcher.setPower(0);
+            }
+        }
+        else {
+            telemetry.addData("fuck", " shit");
+            launcher.setPower(-gamepad2.right_stick_y);
+            canShoot = true;
+        }
 
         //Carousel shenanigans==============================================
 
         //Circle pressed and carousel not moving
-        if(gamepad2.circle && (!carouselMoving) && inHalfPosition){
+        if(gamepad2.triangle && (!carouselMoving) && inHalfPosition && canShoot){
             carousel.liftUp();
             canMoveCarousel = false;
+            startTime = time;
         }
         //Circle not pressed (doesn't matter if carousel is moving or not)
         else{
-            if(gamepad2.circleWasReleased()){
-                startTime = time;
-            }
             canMoveCarousel = time > (startTime + liftTimeToPosition);
             carousel.liftDown();
         }
@@ -125,16 +174,23 @@ public class mecanumManual extends OpMode {
             //Moves and checks movement of carousel
             carouselMoving = !carousel.approachPosition(deltaTime);
         }
-        else carouselMotor.setPower(0);
+        else {carouselMotor.setPower(0);}
 
         //Telemetry
-        telemetry.addData("Heading", follower.getPose().getHeading());
-        telemetry.addData("X", follower.getPose().getX());
-        telemetry.addData("Y", follower.getPose().getY());
-        telemetry.addData("Field Centric", fieldCentric);
-
-        telemetry.addData("carouselPos", carousel.position);
-        telemetry.addData("carouselDistance", carousel.distanceToPos(carousel.position));
+        telemetry.addData("targetSpeed", targetSpeed);
+        telemetry.addData("launcherSpeed", launcher.getLauncherSpeed());
+//        telemetry.addData("Heading", follower.getPose().getHeading());
+//        telemetry.addData("X", follower.getPose().getX());
+//        telemetry.addData("Y", follower.getPose().getY());
+//        telemetry.addData("Field Centric", fieldCentric);
+//        telemetry.addData("Launcher Power", launcher.getPower());
+//        telemetry.addData("carouselPos", carousel.position);
+//        telemetry.addData("carouselDistance", carousel.distanceToPos(carousel.position));
+        telemetry.addData("deltaTime", deltaTime);
+//        telemetry.addData("debugVal", debugVal);
+//        telemetry.addData("launcherPower", launcher.getPower());
+        telemetry.addData("stickY", gamepad1.left_stick_y);
+        telemetry.addData("stickX", gamepad1.left_stick_x);
 
         prevTime = time;
     }
