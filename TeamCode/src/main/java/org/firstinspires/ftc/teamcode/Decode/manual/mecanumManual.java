@@ -81,19 +81,12 @@ public class mecanumManual extends OpMode {
         //Blue controller===================================================
         targetVector.setOrthogonalComponents(gamepad1.left_stick_x,-gamepad1.left_stick_y);
 
-//        follower.setTeleOpDrive(
-//                targetVector.getYComponent(),
-//                targetVector.getXComponent(),
-//                gamepad1.right_stick_x,
-//                true
-//        );
-        double x = targetVector.getXComponent();
-        double y = targetVector.getYComponent();
-        double r = -gamepad1.right_stick_x;
-        leftFront.setPower(x - y + r);
-        leftBack.setPower(x + y + r);
-        rightFront.setPower(x + y - r);
-        rightBack.setPower(x - y + r);
+        follower.setTeleOpDrive(
+                targetVector.getYComponent(),
+                targetVector.getXComponent(),
+                gamepad1.right_stick_x,
+                true
+        );
 
         intake.setPower(gamepad1.right_trigger);
 
@@ -129,8 +122,8 @@ public class mecanumManual extends OpMode {
         }
 
         if(Math.abs(gamepad2.right_stick_y)<0.3) {
-            if(gamepad2.dpadLeftWasPressed()){targetSpeed -= 0.5;}
-            if(gamepad2.dpadRightWasPressed()){targetSpeed += 0.5;}
+            if(gamepad2.dpadLeftWasPressed()){targetSpeed -= 1;}
+            if(gamepad2.dpadRightWasPressed()){targetSpeed += 1;}
             launcher.targetSpeed = targetSpeed;
             if (gamepad2.circleWasPressed()) {
                 canShoot = false;
@@ -152,7 +145,7 @@ public class mecanumManual extends OpMode {
 
         //Carousel shenanigans==============================================
 
-        //Circle pressed and carousel not moving
+        //Triangle pressed and carousel not moving
         if(gamepad2.triangle && (!carouselMoving) && inHalfPosition && canShoot){
             carousel.liftUp();
             canMoveCarousel = false;
