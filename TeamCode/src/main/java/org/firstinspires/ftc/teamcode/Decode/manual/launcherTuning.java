@@ -4,10 +4,13 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
+
 import org.firstinspires.ftc.teamcode.Decode.Launcher;
 
 @TeleOp
 public class launcherTuning extends OpMode {
+    Servo lift;
     private double prevTime = -0.0001,
                    lastUpdateTime;
     private double Kp = 1.75,
@@ -20,10 +23,19 @@ public class launcherTuning extends OpMode {
         launcher = new Launcher(hardwareMap, "launcher");
         launcher.speedLength = 10;
         launcher.PID.setIntegralLimit(0.4);
+
+        lift = hardwareMap.get(Servo.class, "lift");
     }
 
     @Override
     public void loop(){
+        if (gamepad2.triangle){
+            lift.setPosition(1.0);
+        }
+        else {
+            lift.setPosition(0.0);
+        }
+
         if (time - lastUpdateTime >= 0.02) {
             double deltaTime = time - prevTime;
             launcher.update(deltaTime);
@@ -64,7 +76,7 @@ public class launcherTuning extends OpMode {
                 launcher.PID.setIntegralLimit(launcher.PID.getIntegralLimit() - 0.05);
             }
 
-            //launcher.PID.setConstants(Kp, Ki, Kd);
+//            launcher.PID.setConstants(Kp, Ki, Kd);
 
             if (Math.abs(gamepad2.right_stick_y) < 0.3) {
                 if (gamepad2.circleWasPressed()) {

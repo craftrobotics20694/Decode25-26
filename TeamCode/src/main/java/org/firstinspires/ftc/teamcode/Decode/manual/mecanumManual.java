@@ -19,8 +19,11 @@ import org.firstinspires.ftc.teamcode.Decode.mecanumConstants;
 @TeleOp
 public class mecanumManual extends OpMode {
     private Follower follower;
-    private static double startingHeading = Math.toRadians(90);
-    public static Pose startingPose = new Pose(0,0, startingHeading); //See ExampleAuto to understand how to use this
+    public static Pose startingPose = new Pose(0,0, Math.toRadians(90));
+    private final Pose redObelisk = new Pose(136, 136, 0);
+    private final Pose blueObelisk = new Pose(8, 136, 0);
+    private Pose targetObelisk = redObelisk;
+
     private boolean fieldCentric = false;
     private vector targetVector = new vector();
     private Servo lift;
@@ -121,15 +124,16 @@ public class mecanumManual extends OpMode {
             debugVal = 0;
         }
 
+        double distance = Math.sqrt(
+                    Math.pow(targetObelisk.getX() - follower.getPose().getX(), 2) +
+                    Math.pow(targetObelisk.getY() - follower.getPose().getY(), 2)
+                );
         if(Math.abs(gamepad2.right_stick_y)<0.3) {
-            if(gamepad2.dpadLeftWasPressed()){targetSpeed -= 1;}
-            if(gamepad2.dpadRightWasPressed()){targetSpeed += 1;}
-            launcher.targetSpeed = targetSpeed;
+            launcher.targetSpeed = launcher.getSpeedFor(distance);
             if (gamepad2.circleWasPressed()) {
                 canShoot = false;
                 launcher.beginApproach();
                 debugVal = 1;
-                telemetry.addData("fuck", " shit");
             } else if (gamepad2.circle) {
                 boolean tempBool = launcher.approachSpeed();
                 canShoot = canShoot || tempBool;
@@ -138,7 +142,6 @@ public class mecanumManual extends OpMode {
             }
         }
         else {
-            telemetry.addData("fuck", " shit");
             launcher.setPower(-gamepad2.right_stick_y);
             canShoot = true;
         }

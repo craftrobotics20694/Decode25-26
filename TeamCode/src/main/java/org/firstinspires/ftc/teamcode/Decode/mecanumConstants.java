@@ -26,8 +26,8 @@ public class mecanumConstants {
             .leftRearMotorName("leftBack")
             .rightRearMotorName("rightBack")
             .leftFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
-            .rightFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
-            .leftRearMotorDirection(DcMotorSimple.Direction.REVERSE)
+            .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
+            .leftRearMotorDirection(DcMotorSimple.Direction.FORWARD)
             .rightRearMotorDirection(DcMotorSimple.Direction.REVERSE)
             .xVelocity(61.0)
             .yVelocity(42.29);

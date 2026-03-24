@@ -20,6 +20,13 @@ public class Launcher {
     private DcMotor launcherMotor;
 
     /**
+     * @param distance horizontal distance to target
+     */
+    public double getSpeedFor(double distance){
+        double speed = ( (0.00261196) * (Math.pow(distance, 2)) - ((-0.161285)*distance) + 37.89638);
+        return speed;
+    }
+    /**
      * Called once per loop
      */
     public void update(double deltaTime){
