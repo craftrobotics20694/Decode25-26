@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.Decode.drivetrains;
 
-import com.pedropathing.Drivetrain;
+import com.pedropathing.drivetrain.Drivetrain;
 import com.pedropathing.math.Vector;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;

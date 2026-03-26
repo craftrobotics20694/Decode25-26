@@ -20,11 +20,8 @@ import com.pedropathing.telemetry.SelectableOpMode;
 import com.pedropathing.util.*;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-<<<<<<< HEAD
 import org.firstinspires.ftc.teamcode.Decode.mecanumConstants;
-=======
 import com.qualcomm.robotcore.util.ElapsedTime;
->>>>>>> upstream/master
 
 import java.util.ArrayList;
 import java.util.List;
