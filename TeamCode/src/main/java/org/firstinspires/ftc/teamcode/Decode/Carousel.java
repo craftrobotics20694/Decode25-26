@@ -18,7 +18,7 @@ public class Carousel {
     private final double carouselTolerance = 0.03;
     private final double basePower = 0.05;
     private Servo lift;
-    private final double liftUp = 0.7;
+    private final double liftUp = 1.0;
     private final double liftDown = 0.0;
 
     public Carousel assignMotor(DcMotor motor) {
