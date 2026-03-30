@@ -19,7 +19,7 @@ import org.firstinspires.ftc.teamcode.Decode.mecanumConstants;
 @TeleOp
 public class mecanumManual extends OpMode {
     private Follower follower;
-    public static Pose startingPose = new Pose(0,0, Math.toRadians(90));
+    public static Pose startingPose = new Pose(9,9, Math.toRadians(90));
     private final Pose redObelisk = new Pose(136, 136, 0);
     private final Pose blueObelisk = new Pose(8, 136, 0);
     private Pose targetObelisk = redObelisk;
@@ -56,12 +56,20 @@ public class mecanumManual extends OpMode {
         launcher.PID.setIntegralLimit(0.4);
 
         leftFront = hardwareMap.get(DcMotor.class, "leftFront");
+        leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        leftFront.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         leftBack = hardwareMap.get(DcMotor.class, "leftBack");
+        leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        leftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         rightFront = hardwareMap.get(DcMotor.class, "rightFront");
+        rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightFront.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         rightBack = hardwareMap.get(DcMotor.class, "rightBack");
+        rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         follower = mecanumConstants.createFollower(hardwareMap);
         follower.setStartingPose(startingPose == null ? new Pose() : startingPose);
@@ -86,8 +94,8 @@ public class mecanumManual extends OpMode {
 
         follower.setTeleOpDrive(
                 targetVector.getYComponent(),
-                targetVector.getXComponent(),
-                gamepad1.right_stick_x,
+                -targetVector.getXComponent(),
+                -gamepad1.right_stick_x,
                 true
         );
 
@@ -173,11 +181,12 @@ public class mecanumManual extends OpMode {
         else {carouselMotor.setPower(0);}
 
         //Telemetry
-        telemetry.addData("targetSpeed", targetSpeed);
+        telemetry.addData("targetSpeed", launcher.targetSpeed);
         telemetry.addData("launcherSpeed", launcher.getLauncherSpeed());
-//        telemetry.addData("Heading", follower.getPose().getHeading());
-//        telemetry.addData("X", follower.getPose().getX());
-//        telemetry.addData("Y", follower.getPose().getY());
+        telemetry.addData("distance", distance);
+        telemetry.addData("Heading", follower.getPose().getHeading());
+        telemetry.addData("X", follower.getPose().getX());
+        telemetry.addData("Y", follower.getPose().getY());
 //        telemetry.addData("Field Centric", fieldCentric);
 //        telemetry.addData("Launcher Power", launcher.getPower());
 //        telemetry.addData("carouselPos", carousel.position);

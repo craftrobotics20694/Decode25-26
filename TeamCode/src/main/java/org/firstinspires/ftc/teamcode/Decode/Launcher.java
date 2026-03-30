@@ -23,7 +23,7 @@ public class Launcher {
      * @param distance horizontal distance to target
      */
     public double getSpeedFor(double distance){
-        double speed = ( (0.00261196) * (Math.pow(distance, 2)) - ((-0.161285)*distance) + 37.89638);
+        double speed = ( (0.00261196*Math.pow(distance,2)) + (-0.161285*distance) + 37.89638);
         return speed;
     }
     /**
@@ -76,7 +76,7 @@ public class Launcher {
         PID.setIntegralLimit(0.4);
         launcherMotor = motor;
         launcherMotor.setDirection(direction);
-        launcherMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        launcherMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
     }
     public Launcher(HardwareMap hardwareMap, String name){
         this(hardwareMap.get(DcMotor.class, name));
